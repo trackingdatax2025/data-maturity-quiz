@@ -24,16 +24,38 @@ export default function Results({ companyData, answers, totalScore, onRestart }:
   const levelData = calculateLevel(totalScore);
 
   useEffect(() => {
-    generateAnalysis();
+    // Esta función ahora se encarga de guardar y luego analizar.
+    saveAndAnalyze();
   }, []);
 
-  const generateAnalysis = async () => {
+  const saveAndAnalyze = async () => {
     setLoading(true);
     setError('');
-
     try {
-      // Preparar contexto detallado de las respuestas
-      const detailedAnswers = questions.map((q, idx) => {
+      // 🔥 PASO 1: GUARDAR EN GOOGLE SHEETS PRIMERO
+      console.log('📊 Intentando guardar en Google Sheets...');
+      try {
+        await fetch('/api/save-response', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            companyName: companyData.company,
+            email: companyData.email,
+            acceptsMarketing: companyData.acceptCommunications,
+            totalScore: totalScore,
+            level: levelData.level,
+            answers: answers, // Pasamos las respuestas para el backend
+            timestamp: new Date().toISOString(),
+          }),
+        });
+        console.log('✅ Datos enviados a la API de guardado.');
+      } catch (sheetError) {
+        console.warn('⚠️ Error al intentar guardar en Sheets (el flujo continúa):', sheetError);
+      }
+
+      // 🔥 PASO 2: GENERAR ANÁLISIS CON IA
+      console.log('🤖 Solicitando análisis a la IA...');
+      const detailedAnswers = questions.map((q) => {
         const answerValue = answers[q.id];
         const selectedOption = q.options.find(opt => opt.value === answerValue);
         return {
@@ -101,29 +123,9 @@ export default function Results({ companyData, answers, totalScore, onRestart }:
         {/* Score visualization */}
         <div className="flex flex-col items-center mb-8">
           <div className="relative w-48 h-48 mb-6">
-            {/* Circular progress */}
             <svg className="transform -rotate-90 w-48 h-48">
-              <circle
-                cx="96"
-                cy="96"
-                r="88"
-                stroke="currentColor"
-                strokeWidth="12"
-                fill="transparent"
-                className="text-gray-200"
-              />
-              <circle
-                cx="96"
-                cy="96"
-                r="88"
-                stroke="url(#gradient)"
-                strokeWidth="12"
-                fill="transparent"
-                strokeDasharray={`${2 * Math.PI * 88}`}
-                strokeDashoffset={`${2 * Math.PI * 88 * (1 - levelData.percentage / 100)}`}
-                className="transition-all duration-1000 ease-out"
-                strokeLinecap="round"
-              />
+              <circle cx="96" cy="96" r="88" stroke="currentColor" strokeWidth="12" fill="transparent" className="text-gray-200" />
+              <circle cx="96" cy="96" r="88" stroke="url(#gradient)" strokeWidth="12" fill="transparent" strokeDasharray={`${2 * Math.PI * 88}`} strokeDashoffset={`${2 * Math.PI * 88 * (1 - levelData.percentage / 100)}`} className="transition-all duration-1000 ease-out" strokeLinecap="round" />
               <defs>
                 <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stopColor="#8B5CF6" />
@@ -131,15 +133,11 @@ export default function Results({ companyData, answers, totalScore, onRestart }:
                 </linearGradient>
               </defs>
             </svg>
-            
-            {/* Score text */}
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <span className="text-5xl font-bold gradient-text">{totalScore}</span>
               <span className="text-sm text-gray-500">de {MAX_SCORE}</span>
             </div>
           </div>
-
-          {/* Level badge */}
           <div className={`inline-flex items-center gap-2 px-6 py-3 rounded-full text-white font-bold text-xl shadow-lg bg-gradient-to-r ${getLevelColor(levelData.level)}`}>
             <span className="text-2xl">{levelData.emoji}</span>
             <span>Nivel {levelData.level}</span>
@@ -176,7 +174,6 @@ export default function Results({ companyData, answers, totalScore, onRestart }:
             Análisis Personalizado con IA
           </h3>
         </div>
-
         {loading && (
           <div className="flex flex-col items-center justify-center py-12">
             <Loader2 className="w-12 h-12 text-purple-600 animate-spin mb-4" />
@@ -184,12 +181,11 @@ export default function Results({ companyData, answers, totalScore, onRestart }:
             <p className="text-sm text-gray-500 mt-2">Esto puede tomar unos segundos</p>
           </div>
         )}
-
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
             <p className="text-red-800 mb-4">{error}</p>
             <button
-              onClick={generateAnalysis}
+              onClick={saveAndAnalyze}
               className="inline-flex items-center gap-2 px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
             >
               <RefreshCw className="w-4 h-4" />
@@ -197,7 +193,6 @@ export default function Results({ companyData, answers, totalScore, onRestart }:
             </button>
           </div>
         )}
-
         {!loading && !error && analysis && (
           <div className="prose prose-lg max-w-none">
             <ReactMarkdown

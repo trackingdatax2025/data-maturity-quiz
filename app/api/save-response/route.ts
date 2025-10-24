@@ -1,64 +1,60 @@
-// app/api/save-response/route.ts - Endpoint para guardar en Google Sheets
-
 import { NextRequest, NextResponse } from 'next/server';
-import { GoogleSpreadsheet } from 'google-spreadsheet';
-import { JWT } from 'google-auth-library';
+import { sheets as sheets_v4 } from '@googleapis/sheets'; // Importamos solo el cliente de Sheets
+import { GoogleAuth } from 'google-auth-library'; // La autenticación se mantiene igual
 
 export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { companyName, email, acceptsMarketing, totalScore, level, timestamp } = body;
+  const body = await request.json();
+  const { companyName, email, acceptsMarketing, totalScore, level, timestamp } = body;
 
-    // Configurar credenciales de Google (desde variables de entorno)
-    const serviceAccountAuth = new JWT({
-      email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-      key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+  try {
+    // 1. Validar que las variables de entorno estén presentes
+    if (!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY || !process.env.GOOGLE_SHEET_ID) {
+      console.error('❌ ERROR: Faltan variables de entorno de Google Sheets.');
+      return NextResponse.json({ success: false, message: 'El servidor no tiene configuradas las credenciales de Google.' }, { status: 500 });
+    }
+
+    // 2. Configurar la autenticación (esto no cambia)
+    const auth = new GoogleAuth({
+      credentials: {
+        client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+        private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+      },
       scopes: [
         'https://www.googleapis.com/auth/spreadsheets',
       ],
     });
 
-    // Conectar al spreadsheet
-    const doc = new GoogleSpreadsheet(
-      process.env.GOOGLE_SHEET_ID || '',
-      serviceAccountAuth
-    );
+    // 3. Crear un cliente específico para Sheets
+    const sheets = sheets_v4({ version: 'v4', auth });
 
-    await doc.loadInfo();
-    const sheet = doc.sheetsByIndex[0];
+    // 4. Preparar la fila de datos
+    const rowValues = [
+      timestamp || new Date().toISOString(),
+      companyName || '',
+      email || '',
+      acceptsMarketing ? 'Sí' : 'No',
+      totalScore || 0,
+      level || '',
+    ];
 
-    // Verificar si hay headers, si no, crearlos
-    const rows = await sheet.getRows();
-    if (rows.length === 0) {
-      await sheet.setHeaderRow([
-        'Fecha y Hora',
-        'Nombre Empresa',
-        'Email',
-        'Acepta Comunicaciones',
-        'Puntaje Total',
-        'Nivel Madurez',
-      ]);
-    }
-
-    // Agregar nueva fila
-    await sheet.addRow({
-      'Fecha y Hora': timestamp,
-      'Nombre Empresa': companyName,
-      'Email': email,
-      'Acepta Comunicaciones': acceptsMarketing ? 'Sí' : 'No',
-      'Puntaje Total': totalScore.toString(),
-      'Nivel Madurez': level,
+    // 5. Escribir en la hoja de cálculo
+    await sheets.spreadsheets.values.append({
+      spreadsheetId: process.env.GOOGLE_SHEET_ID,
+      range: 'A1',
+      valueInputOption: 'USER_ENTERED',
+      requestBody: {
+        values: [rowValues],
+      },
     });
 
-    return NextResponse.json({ success: true, message: 'Datos guardados exitosamente' });
+    console.log('✅ Fila agregada a Google Sheets (usando cliente optimizado).');
+    return NextResponse.json({ success: true, message: 'Datos guardados exitosamente.' });
 
   } catch (error: any) {
-    console.error('Error saving to Google Sheets:', error);
-    
-    // Fallar silenciosamente para no interrumpir la experiencia del usuario
+    console.error('❌ ERROR al guardar en Google Sheets (cliente optimizado):', error.message);
     return NextResponse.json(
-      { success: false, message: 'Error guardando datos', error: error.message },
-      { status: 200 } // Retornamos 200 para no romper el flujo
+      { success: false, message: 'Error interno al comunicarse con Google Sheets.', errorDetails: error.message },
+      { status: 500 }
     );
   }
 }

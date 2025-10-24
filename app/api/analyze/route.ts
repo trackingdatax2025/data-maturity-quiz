@@ -1,104 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
+// La inicialización de OpenAI se mantiene, aunque no la usemos en modo de prueba,
+// para evitar errores de importación en otras partes del código si existieran.
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { company, email, totalScore, maxScore, level, answers } = body;
+    // --- MODO DE PRUEBA ACTIVADO ---
+    // La llamada real a OpenAI está desactivada.
+    // En su lugar, devolvemos un análisis de prueba estático.
+    // Esto te permite probar el flujo completo sin costo alguno.
 
-    // Construir contexto detallado
-    const answersContext = answers.map((a: any, idx: number) => 
-      `${idx + 1}. ${a.question}\n   Respuesta: ${a.answer} (${a.description})\n   Puntaje: ${a.score}/100`
-    ).join('\n\n');
+    console.log('MODO DE PRUEBA: Devolviendo análisis simulado.');
 
-    const prompt = `Eres un consultor experto en Data-Driven Marketing y Analytics con más de 15 años de experiencia ayudando a empresas a madurar su uso de datos.
+    const mockAnalysis = `
+# 🧪 Análisis de Prueba (Modo Local)
 
-CONTEXTO DEL CLIENTE:
-- Empresa: ${company}
-- Nivel actual: ${level}
-- Puntaje obtenido: ${totalScore}/${maxScore} (${Math.round((totalScore/maxScore)*100)}%)
+¡Felicidades! Si estás viendo esto, significa que el flujo de tu aplicación funciona correctamente sin llamar a la API de OpenAI.
 
-RESPUESTAS DEL CUESTIONARIO:
-${answersContext}
+## Verificaciones completadas:
+* ✅ **Formulario de inicio:** Los datos se capturan correctamente.
+* ✅ **Cuestionario:** Las respuestas se guardan en el estado de la aplicación.
+* ✅ **Llamada a la API:** El endpoint \`/api/analyze\` fue alcanzado con éxito.
+* ✅ **Renderizado de resultados:** La respuesta simulada se muestra en la interfaz de usuario.
 
-TAREA:
-Genera un análisis ejecutivo profesional, personalizado y accionable que incluya:
+## Próximos Pasos:
+1.  **Revisa tu Google Sheet:** Confirma que una nueva fila con los datos de este test se haya guardado. (Esta funcionalidad es independiente del análisis de IA).
+2.  **Desactiva el modo de prueba:** Cuando termines de probar, restaura el contenido original de este archivo para volver a habilitar los análisis con OpenAI.
 
-## 📊 Diagnóstico del Estado Actual
-- Evaluación honesta de fortalezas identificadas
-- Brechas críticas que limitan el crecimiento
-- Comparación con el benchmark de la industria
+---
+*Este es un mensaje automático para fines de prueba.*
+`;
 
-## 🎯 Quick Wins (Implementación: 1-3 meses)
-3-4 acciones concretas de alto impacto que puede implementar YA para mejorar resultados:
-- Acción específica con ROI estimado
-- Herramientas necesarias (menciona nombres específicos)
-- Esfuerzo requerido (tiempo/presupuesto)
-
-## 🚀 Roadmap Estratégico (6-12 meses)
-Plan priorizado con:
-- Fase 1: Fundamentos (meses 1-3)
-- Fase 2: Consolidación (meses 4-6)
-- Fase 3: Optimización (meses 7-12)
-
-## 💡 Stack Tecnológico Recomendado
-Herramientas específicas según su nivel actual:
-- Analytics & Tracking
-- Automatización
-- Visualización
-- Infrastructure (si aplica)
-
-## 📈 ROI Estimado
-Impacto cuantificable esperado:
-- Mejora en eficiencia operativa
-- Reducción de costos
-- Incremento en conversiones
-
-ESTILO:
-- Lenguaje claro, directo y profesional
-- Evita jerga excesiva pero sé técnicamente preciso
-- Usa bullet points para facilitar lectura
-- Incluye números y porcentajes cuando sea posible
-- Personaliza según el nivel actual (no des recomendaciones muy avanzadas si está en nivel inicial)
-- Sé optimista pero realista
-
-LONGITUD: 800-1000 palabras
-
-Genera el análisis ahora:`;
-
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4-turbo-preview",
-      messages: [
-        {
-          role: "system",
-          content: "Eres un consultor experto en Data-Driven Marketing y Analytics de TrackingDataX. Generas análisis profesionales, accionables y personalizados."        },
-        {
-          role: "user",
-          content: prompt
-        }
-      ],
-      temperature: 0.7,
-      max_tokens: 2000,
-    });
-
-    const analysis = completion.choices[0]?.message?.content || 'No se pudo generar el análisis';
-
-    // Aquí podrías guardar en Google Sheets si quieres
-    // await saveToGoogleSheets({ company, email, totalScore, level, acceptCommunications });
-
-    return NextResponse.json({ 
-      analysis,
-      success: true 
+    // Se retorna el objeto con el análisis de prueba.
+    return NextResponse.json({
+      analysis: mockAnalysis,
+      success: true
     });
 
   } catch (error) {
-    console.error('Error in analyze API:', error);
+    console.error('Error en /api/analyze (modo de prueba):', error);
+    // Mantenemos el manejo de errores por si algo más fallara.
     return NextResponse.json(
-      { error: 'Error al generar análisis', details: error instanceof Error ? error.message : 'Unknown error' },
+      { error: 'Error al generar análisis simulado', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }

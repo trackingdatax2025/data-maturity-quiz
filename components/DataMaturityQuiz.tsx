@@ -78,7 +78,7 @@ export default function DataMaturityQuiz() {
             email,
             acceptsMarketing,
             totalScore,
-            level: calculateLevel(totalScore),
+            level: calculateLevel(totalScore).level,
             timestamp,
           }),
         });
