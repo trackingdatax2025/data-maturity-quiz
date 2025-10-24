@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Madurez Data-Driven | Boomit</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+        
+        .iframe-container {
+            position: relative;
+            width: 100%;
+            height: 800px;
+            background: #f9fafb;
+        }
+        
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .footer {
+            background: #f9fafb;
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .cta-section {
+            background: white;
+            padding: 40px 30px;
+            text-align: center;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .cta-section h2 {
+            font-size: 24px;
+            color: #1f2937;
+            margin-bottom: 15px;
+        }
+        
+        .cta-section p {
+            color: #6b7280;
+            margin-bottom: 25px;
+            font-size: 16px;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 40px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .header p {
+                font-size: 16px;
+            }
+            
+            .iframe-container {
+                height: 900px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Test de Madurez Data-Driven</h1>
+            <p>Descubre el nivel de tu empresa en 5 preguntas + análisis personalizado con IA</p>
+        </div>
+        
+        <div class="iframe-container">
+            <!-- 
+                🔥 IMPORTANTE: Reemplaza esta URL con tu URL de Vercel
+                Ejemplo: https://tu-proyecto.vercel.app
+            -->
+            <iframe 
+                src="https://TU-URL-AQUI.vercel.app"
+                title="Test de Madurez Data-Driven"
+                loading="lazy"
+                allow="clipboard-write"
+            ></iframe>
+        </div>
+        
+        <div class="cta-section">
+            <h2>¿Quieres mejorar tu estrategia data-driven?</h2>
+            <p>Agenda una consulta gratuita con nuestros expertos y descubre cómo llevar tu marketing al siguiente nivel</p>
+            <a href="https://boomit.com.ar/contacto" class="cta-button" target="_blank">
+                📅 Agendar Consulta Gratuita
+            </a>
+        </div>
+        
+        <div class="footer">
+            Powered by <a href="https://boomit.com.ar" target="_blank">Boomit</a> • 
+            Transformación Digital & Data-Driven Marketing
+        </div>
+    </div>
+</body>
+</html>
