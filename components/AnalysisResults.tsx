@@ -71,14 +71,14 @@ export default function AnalysisResults({ result, companyName }: AnalysisResults
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className={`rounded-2xl shadow-xl p-8 border-2 ${getLevelBgColor(result.level)}`}
+          className={`rounded-2xl shadow-xl p-8 border-2 ${getLevelBgColor(result.percentage)}`}
         >
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-4">
-              <Award className={`w-12 h-12 ${getLevelColor(result.level)}`} />
+              <Award className={`w-12 h-12 ${getLevelColor(result.percentage)}`} />
               <div>
                 <h2 className="text-sm font-medium text-gray-600 mb-1">Tu Nivel de Madurez</h2>
-                <p className={`text-4xl font-bold ${getLevelColor(result.level)}`}>
+                <p className={`text-4xl font-bold ${getLevelColor(result.percentage)}`}>
                   {result.level}
                 </p>
               </div>
