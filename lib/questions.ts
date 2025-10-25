@@ -215,3 +215,20 @@ export function calculateLevel(score: number): {
     };
   }
 }
+
+// Funciones auxiliares para colores
+export function getLevelColor(level: number): string {
+  if (level < 20) return 'text-red-600';
+  if (level < 40) return 'text-orange-600';
+  if (level < 60) return 'text-yellow-600';
+  if (level < 80) return 'text-blue-600';
+  return 'text-green-600';
+}
+
+export function getLevelBgColor(level: number): string {
+  if (level < 20) return 'bg-red-50';
+  if (level < 40) return 'bg-orange-50';
+  if (level < 60) return 'bg-yellow-50';
+  if (level < 80) return 'bg-blue-50';
+  return 'bg-green-50';
+}
