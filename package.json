@@ -13,6 +13,7 @@
     "framer-motion": "^11.0.3",
     "google-auth-library": "^10.4.2",
     "google-spreadsheet": "^4.1.5",
+    "googleapis": "^164.1.0",
     "lucide-react": "^0.321.0",
     "next": "14.1.0",
     "openai": "^4.28.0",

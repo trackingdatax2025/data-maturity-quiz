@@ -28,73 +28,85 @@ export default function Results({ companyData, answers, totalScore, onRestart }:
     saveAndAnalyze();
   }, []);
 
-  const saveAndAnalyze = async () => {
-    setLoading(true);
-    setError('');
+const saveAndAnalyze = async () => {
+  setLoading(true);
+  setError('');
+  
+  try {
+    const timestamp = new Date().toISOString();
+
+    // PASO 1: Guardar datos básicos
+    console.log('📊 Guardando datos básicos...');
     try {
-      // 🔥 PASO 1: GUARDAR EN GOOGLE SHEETS PRIMERO
-      console.log('📊 Intentando guardar en Google Sheets...');
-      try {
-        await fetch('/api/save-response', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            companyName: companyData.company,
-            email: companyData.email,
-            acceptsMarketing: companyData.acceptCommunications,
-            totalScore: totalScore,
-            level: levelData.level,
-            answers: answers, // Pasamos las respuestas para el backend
-            timestamp: new Date().toISOString(),
-          }),
-        });
-        console.log('✅ Datos enviados a la API de guardado.');
-      } catch (sheetError) {
-        console.warn('⚠️ Error al intentar guardar en Sheets (el flujo continúa):', sheetError);
-      }
-
-      // 🔥 PASO 2: GENERAR ANÁLISIS CON IA
-      console.log('🤖 Solicitando análisis a la IA...');
-      const detailedAnswers = questions.map((q) => {
-        const answerValue = answers[q.id];
-        const selectedOption = q.options.find(opt => opt.value === answerValue);
-        return {
-          question: q.text,
-          answer: selectedOption?.text || 'No respondida',
-          description: selectedOption?.description || '',
-          score: answerValue
-        };
-      });
-
-      const response = await fetch('/api/analyze', {
+      await fetch('/api/save-response', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          company: companyData.company,
+          companyName: companyData.company,
           email: companyData.email,
-          totalScore,
-          maxScore: MAX_SCORE,
+          acceptsMarketing: companyData.acceptCommunications,
+          totalScore: totalScore,
           level: levelData.level,
-          answers: detailedAnswers
+          timestamp: timestamp,
         }),
       });
-
-      if (!response.ok) {
-        throw new Error('Error al generar el análisis');
-      }
-
-      const data = await response.json();
-      setAnalysis(data.analysis);
-      
-    } catch (err) {
-      setError('Hubo un problema al generar tu análisis. Por favor intenta de nuevo.');
-      console.error('Error:', err);
-    } finally {
-      setLoading(false);
+    } catch (sheetError) {
+      console.warn('⚠️ Error en Sheets:', sheetError);
     }
-  };
+
+    // PASO 2: Generar análisis IA
+    console.log('🤖 Generando análisis...');
+    const detailedAnswers = questions.map((q) => {
+      const answerValue = answers[q.id];
+      const selectedOption = q.options.find(opt => opt.value === answerValue);
+      return {
+        question: q.text,
+        answer: selectedOption?.text || 'No respondida',
+        description: selectedOption?.description || '',
+        score: answerValue
+      };
+    });
+
+    const response = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        company: companyData.company,
+        email: companyData.email,
+        totalScore,
+        maxScore: MAX_SCORE,
+        level: levelData.level,
+        answers: detailedAnswers
+      }),
+    });
+
+    if (!response.ok) throw new Error('Error en análisis');
+
+    const data = await response.json();
+    setAnalysis(data.analysis);
+
+    // PASO 3: Actualizar diagnóstico
+    console.log('📝 Actualizando diagnóstico...');
+    try {
+      await fetch('/api/update-diagnosis', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: companyData.email,
+          diagnosis: data.analysis,
+        }),
+      });
+    } catch (updateError) {
+      console.warn('⚠️ Error actualizando:', updateError);
+    }
+    
+  } catch (err) {
+    setError('Error al generar análisis');
+    console.error(err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const getLevelColor = (level: string) => {
     const colors: Record<string, string> = {
