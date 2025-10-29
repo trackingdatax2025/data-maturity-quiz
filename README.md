@@ -216,13 +216,12 @@ npm run lint         # Linter
 
 ¿Necesitas ayuda? 
 
-- 📧 Email: hola@boomit.com.ar
-- 🌐 Web: [boomit.com.ar](https://boomit.com.ar)
+- 📧 Email: info@trackingdatax.com
 - 💬 WhatsApp: +54 9 11 XXXX-XXXX
 
 ## 📄 Licencia
 
-Desarrollado por **Boomit** - Todos los derechos reservados.
+Desarrollado por **trackingdatax** - Todos los derechos reservados.
 
 ---
 
