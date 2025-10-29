@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // Permitir embeber en iframes desde cualquier dominio
   async headers() {
     return [
       {
@@ -13,12 +12,14 @@ const nextConfig = {
           },
           {
             key: 'Content-Security-Policy',
-            value: "frame-ancestors *",
+            // 🔽 IMPORTANTE: lista explícita de sitios que pueden embeber tu app
+            value:
+              "frame-ancestors 'self' https://trackingdatax.com https://www.trackingdatax.com http://localhost:5500;",
           },
         ],
       },
-    ]
+    ];
   },
-}
+};
 
-module.exports = nextConfig
+module.exports = nextConfig;
