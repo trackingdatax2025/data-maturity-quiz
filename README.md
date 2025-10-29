@@ -131,7 +131,7 @@ Edita `tailwind.config.js`:
 
 ```js
 colors: {
-  boomit: {
+  trackingdatax: {
     purple: '#TU_COLOR_AQUI',
     pink: '#TU_COLOR_AQUI',
   }

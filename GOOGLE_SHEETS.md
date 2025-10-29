@@ -165,4 +165,4 @@ await fetch('https://hooks.zapier.com/hooks/catch/tu-webhook-aqui', {
 
 ---
 
-¿Necesitas ayuda? Contáctanos en hola@boomit.com.ar
+¿Necesitas ayuda? Contáctanos en info@trackingdatax.com

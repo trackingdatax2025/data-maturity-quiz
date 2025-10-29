@@ -370,4 +370,4 @@ Y en 1 minuto tendrás un quiz **profesional, rápido y listo para embeber** �
 
 ---
 
-**¿Preguntas?** Lee el README.md completo o contacta: hola@boomit.com
+**¿Preguntas?** Lee el README.md completo o contacta: info@trackingdatax.com

@@ -348,8 +348,8 @@ git push
 
 ## 📞 Soporte
 
-**Email:** hola@boomit.com  
-**Web:** https://boomit.com  
+**Email:** info@trackingdatax.com 
+**Web:** https://trackingdatax.com  
 **Docs:** Ver archivos .md incluidos  
 
 ---
@@ -376,4 +376,4 @@ Este proyecto te entrega un **quiz profesional listo para producción** que pued
 
 ---
 
-Hecho con ❤️ por **Boomit** - Let's perform! 
+Hecho con ❤️ por **Trackingdatax** - Smarter with Data

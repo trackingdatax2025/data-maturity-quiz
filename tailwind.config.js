@@ -20,7 +20,7 @@ module.exports = {
           800: '#3730a3',
           900: '#312e81',
         },
-        boomit: {
+        trackingdatax: {
           purple: '#8B5CF6',
           pink: '#EC4899',
         }

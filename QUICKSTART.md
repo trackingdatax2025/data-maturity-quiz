@@ -116,7 +116,7 @@ npm install
 
 ## 📞 Soporte
 
-- 📧 hola@boomit.com.ar
+- 📧 info@trackingdatax.com
 - 📚 Lee `README.md` completo
 - 🚀 Ver `DEPLOY.md` para más detalles
 

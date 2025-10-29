@@ -200,7 +200,7 @@ export default function AnalysisResults({ result, companyName }: AnalysisResults
             Hablemos sobre cómo podemos ayudarte a implementar estas mejoras
           </p>
           <a
-            href="https://boomit.com/contacto"
+            href="https://trackingdatax.com/contacto"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-block bg-white text-purple-600 px-8 py-3 rounded-lg font-semibold hover:bg-purple-50 transition"

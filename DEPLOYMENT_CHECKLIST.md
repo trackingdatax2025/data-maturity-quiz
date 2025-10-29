@@ -15,7 +15,7 @@
 ### Customización (Opcional)
 - [ ] Cambiar colores en `tailwind.config.js` para match con tu brand
 - [ ] Actualizar metadata en `app/layout.tsx` (título, descripción)
-- [ ] Agregar tu logo (reemplazar referencias a "Boomit" si aplica)
+- [ ] Agregar tu logo (reemplazar referencias a "trackingdatax" si aplica)
 - [ ] Personalizar el CTA del final en `components/AnalysisResults.tsx`
 - [ ] Ajustar el prompt de análisis en `app/api/analyze/route.ts`
 
@@ -284,7 +284,7 @@ Si tienes problemas:
 1. Revisa los logs en Vercel Dashboard
 2. Abre la consola del navegador (F12) y busca errores
 3. Consulta el README.md completo
-4. Contacta: hola@boomit.com
+4. Contacta: info@trackingdatax.com
 
 ---
 

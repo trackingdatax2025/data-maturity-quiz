@@ -26,7 +26,7 @@ https://data-maturity-quiz.vercel.app
 
 **Lo que ve el usuario:**
 - Formulario limpio y profesional
-- Brand de Boomit con gradientes purple/pink
+- Brand de Trackingdatax con gradientes purple/pink
 - Indicadores de confianza (tiempo, cantidad preguntas)
 - Validación en tiempo real
 
@@ -121,8 +121,8 @@ https://data-maturity-quiz.vercel.app
 
 ### Paleta de colores
 ```css
-Primary Purple:  #8B5CF6  (Boomit brand)
-Primary Pink:    #EC4899  (Boomit brand)
+Primary Purple:  #8B5CF6  (Trackingdatax brand)
+Primary Pink:    #EC4899  (Trackingdatax brand)
 Success Green:   #10B981
 Warning Yellow:  #F59E0B
 Error Red:       #EF4444
@@ -158,7 +158,7 @@ Neutral Gray:    #6B7280
 ### Opción A: iFrame simple
 ```html
 <iframe 
-  src="https://quiz.boomit.com.ar" 
+  src="https://trackindatax.com" 
   width="100%" 
   height="900px"
   style="border: none; border-radius: 12px;"
@@ -187,7 +187,7 @@ function openQuizModal() {
 ```html
 <section id="quiz" class="quiz-section">
   <h2>Descubre tu nivel de madurez</h2>
-  <iframe src="https://quiz.boomit.com.ar/embed"></iframe>
+  <iframe src="https://trackingdatax.com"></iframe>
 </section>
 ```
 **Ventaja:** Integración nativa

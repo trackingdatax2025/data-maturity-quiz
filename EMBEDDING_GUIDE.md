@@ -37,13 +37,13 @@ Esta guía te ayudará a embeber el Test de Madurez Data-Driven en tu sitio web,
 Agrega esto a `functions.php` de tu tema:
 
 ```php
-function boomit_quiz_shortcode() {
+function trackingdatax_quiz_shortcode() {
     return '<iframe src="https://tu-quiz.vercel.app/embed" width="100%" height="900px" frameborder="0" style="border: none; border-radius: 12px;"></iframe>';
 }
-add_shortcode('boomit_quiz', 'boomit_quiz_shortcode');
+add_shortcode('trackingdatax_quiz', 'trackingdatax_quiz_shortcode');
 ```
 
-Luego en cualquier página/post usa: `[boomit_quiz]`
+Luego en cualquier página/post usa: `[trackingdatax_quiz]`
 
 ---
 
@@ -183,7 +183,7 @@ Si tienes un sitio HTML simple:
 
 ```html
 <iframe 
-  id="boomit-quiz" 
+  id="trackingdatax-quiz" 
   src="https://tu-quiz.vercel.app/embed" 
   width="100%" 
   frameborder="0"
@@ -193,7 +193,7 @@ Si tienes un sitio HTML simple:
   // Ajustar altura automáticamente
   window.addEventListener('message', function(e) {
     if (e.data.type === 'resize') {
-      document.getElementById('boomit-quiz').style.height = e.data.height + 'px';
+      document.getElementById('trackingdatax-quiz').style.height = e.data.height + 'px';
     }
   });
 </script>
@@ -368,7 +368,7 @@ window.addEventListener('message', function(e) {
 
 1. Verifica que la URL del quiz sea correcta y esté accesible
 2. Revisa la consola del navegador (F12) para errores
-3. Contacta: hola@boomit.com
+3. Contacta: info@trackingdatax.com
 
 ---
 
