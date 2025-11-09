@@ -79,8 +79,7 @@ export function calculateLevel(score: number): {
 } {
   const percentage = (score / MAX_SCORE) * 100;
   
-  // --- ¡AQUÍ ESTÁ LA CORRECCIÓN CLAVE! ---
-  // Ahora usamos nombres de clases que Tailwind entiende por defecto.
+  // Usamos nombres de clases que Tailwind entiende por defecto.
   if (percentage < 20) {
     return { level: 'Inicial', color: 'from-gray-400 to-gray-500', emoji: '🌱', percentage };
   } else if (percentage < 40) {
@@ -88,8 +87,28 @@ export function calculateLevel(score: number): {
   } else if (percentage < 60) {
     return { level: 'Intermedio', color: 'from-cyan-400 to-blue-500', emoji: '📈', percentage };
   } else if (percentage < 80) {
-    return { level: 'Avanzado', color: 'from-blue-500 to-blue-700', emoji: '🚀', percentage };
+    return { level: 'Avanzado', color: 'from-brand-primary to-brand-secondary', emoji: '🚀', percentage };
   } else {
     return { level: 'Experto', color: 'from-slate-700 to-slate-900', emoji: '🏆', percentage };
   }
+}
+
+
+// --- ¡AQUÍ ESTÁ LA PARTE FALTANTE QUE CAUSÓ EL ERROR! ---
+// Estas son las funciones que 'AnalysisResults.tsx' necesita.
+
+export function getLevelColor(percentage: number): string {
+  if (percentage < 20) return 'text-gray-600';
+  if (percentage < 40) return 'text-sky-600';
+  if (percentage < 60) return 'text-cyan-600';
+  if (percentage < 80) return 'text-brand-primary';
+  return 'text-slate-900';
+}
+
+export function getLevelBgColor(percentage: number): string {
+  if (percentage < 20) return 'bg-gray-50';
+  if (percentage < 40) return 'bg-sky-50';
+  if (percentage < 60) return 'bg-cyan-50';
+  if (percentage < 80) return 'bg-blue-100';
+  return 'bg-slate-200';
 }
