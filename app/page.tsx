@@ -43,7 +43,7 @@ export default function Home() {
         <div className="flex justify-center mb-8">
           <div className="bg-white rounded-lg shadow-md p-4">
             <div className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-gradient-to-br from-brand-primary to-brand-secondary rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-xl">T</span>
               </div>
               <span className="text-2xl font-bold gradient-text">TRACKINGDATAX</span>
@@ -78,7 +78,7 @@ export default function Home() {
               href="https://trackingdatax.com/" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="text-purple-600 hover:text-purple-700 font-semibold"
+              className="text-brand-primary hover:text-brand-secondary font-semibold"
             >
               TrackingDataX
             </a>

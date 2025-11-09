@@ -55,13 +55,13 @@ export default function Quiz({ companyData, onComplete }: QuizProps) {
           <span className="text-sm font-medium text-gray-600">
             Pregunta {currentQuestion + 1} de {questions.length}
           </span>
-          <span className="text-sm font-medium text-purple-600">
+          <span className="text-sm font-medium text-brand-primary">
             {Math.round(progress)}%
           </span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
           <div 
-            className="h-full bg-gradient-to-r from-purple-600 to-pink-600 transition-all duration-500 ease-out"
+            className="h-full bg-gradient-to-r from-brand-primary to-brand-secondary transition-all duration-500 ease-out"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -84,15 +84,15 @@ export default function Quiz({ companyData, onComplete }: QuizProps) {
                 onClick={() => handleOptionSelect(option.value)}
                 className={`w-full text-left p-5 rounded-xl border-2 transition-all duration-200 transform hover:scale-[1.02] ${
                   isSelected
-                    ? 'border-purple-600 bg-purple-50 shadow-md'
-                    : 'border-gray-200 hover:border-purple-300 hover:bg-purple-50/50'
+                    ? 'border-brand-secondary bg-brand-light-blue shadow-md'
+                    : 'border-gray-200 hover:border-brand-secondary/50 hover:bg-brand-light-blue/50'
                 }`}
               >
                 <div className="flex items-start gap-4">
                   {/* Radio circle */}
                   <div className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
                     isSelected
-                      ? 'border-purple-600 bg-purple-600'
+                      ? 'border-brand-secondary bg-brand-secondary'
                       : 'border-gray-300'
                   }`}>
                     {isSelected && <Check className="w-4 h-4 text-white" />}
@@ -101,7 +101,7 @@ export default function Quiz({ companyData, onComplete }: QuizProps) {
                   {/* Text content */}
                   <div className="flex-1">
                     <p className={`font-semibold mb-1 ${
-                      isSelected ? 'text-purple-900' : 'text-gray-800'
+                      isSelected ? 'text-brand-primary' : 'text-gray-800'
                     }`}>
                       {option.text}
                     </p>
@@ -115,7 +115,7 @@ export default function Quiz({ companyData, onComplete }: QuizProps) {
                   {/* Score badge */}
                   <div className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium ${
                     isSelected
-                      ? 'bg-purple-600 text-white'
+                      ? 'bg-brand-secondary text-white'
                       : 'bg-gray-100 text-gray-600'
                   }`}>
                     {option.value} pts
@@ -146,7 +146,7 @@ export default function Quiz({ companyData, onComplete }: QuizProps) {
             disabled={!canProceed}
             className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all transform ${
               canProceed
-                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 hover:scale-[1.02] shadow-lg'
+                ? 'bg-gradient-to-r from-brand-primary to-brand-secondary text-white hover:opacity-90 hover:scale-[1.02] shadow-lg'
                 : 'bg-gray-200 text-gray-400 cursor-not-allowed'
             }`}
           >

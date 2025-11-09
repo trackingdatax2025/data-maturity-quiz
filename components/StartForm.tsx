@@ -58,7 +58,7 @@ export default function StartForm({ onStart }: StartFormProps) {
           {/* Company Name */}
           <div>
             <label htmlFor="company" className="flex items-center text-sm font-medium text-gray-700 mb-2">
-              <Building2 className="w-4 h-4 mr-2 text-purple-600" />
+              <Building2 className="w-4 h-4 mr-2 text-brand-primary" />
               Nombre de la empresa
             </label>
             <input
@@ -69,7 +69,7 @@ export default function StartForm({ onStart }: StartFormProps) {
                 setCompany(e.target.value);
                 setErrors(prev => ({ ...prev, company: undefined }));
               }}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all ${
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-brand-secondary focus:border-transparent transition-all ${
                 errors.company ? 'border-red-500' : 'border-gray-300'
               }`}
               placeholder="Ej: TrackingDataX"
@@ -82,7 +82,7 @@ export default function StartForm({ onStart }: StartFormProps) {
           {/* Email */}
           <div>
             <label htmlFor="email" className="flex items-center text-sm font-medium text-gray-700 mb-2">
-              <Mail className="w-4 h-4 mr-2 text-purple-600" />
+              <Mail className="w-4 h-4 mr-2 text-brand-primary" />
               Email corporativo
             </label>
             <input
@@ -93,7 +93,7 @@ export default function StartForm({ onStart }: StartFormProps) {
                 setEmail(e.target.value);
                 setErrors(prev => ({ ...prev, email: undefined }));
               }}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all ${
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-brand-secondary focus:border-transparent transition-all ${
                 errors.email ? 'border-red-500' : 'border-gray-300'
               }`}
               placeholder="tu@empresa.com"
@@ -104,13 +104,13 @@ export default function StartForm({ onStart }: StartFormProps) {
           </div>
 
           {/* Communications Checkbox */}
-          <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+          <div className="bg-brand-light-blue border border-blue-200 rounded-lg p-4">
             <label className="flex items-start cursor-pointer">
               <input
                 type="checkbox"
                 checked={acceptCommunications}
                 onChange={(e) => setAcceptCommunications(e.target.checked)}
-                className="mt-1 h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                className="mt-1 h-4 w-4 text-brand-primary focus:ring-brand-secondary border-gray-300 rounded"
               />
               <span className="ml-3 text-sm text-gray-700">
                 Acepto recibir información relevante sobre transformación digital, mejores prácticas y contenido exclusivo para mi sector
@@ -121,7 +121,7 @@ export default function StartForm({ onStart }: StartFormProps) {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 px-6 rounded-lg font-semibold flex items-center justify-center gap-2 hover:from-purple-700 hover:to-pink-700 transition-all transform hover:scale-[1.02] shadow-lg"
+            className="w-full bg-gradient-to-r from-brand-primary to-brand-secondary text-white py-4 px-6 rounded-lg font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-all transform hover:scale-[1.02] shadow-lg"
           >
             Comenzar Test
             <ArrowRight className="w-5 h-5" />
@@ -130,15 +130,15 @@ export default function StartForm({ onStart }: StartFormProps) {
 
         <div className="mt-6 flex items-center justify-center gap-6 text-sm text-gray-500">
           <div className="flex items-center gap-1">
-            <span className="text-purple-600">⚡</span>
+            <span className="text-brand-primary">⚡</span>
             <span>5 preguntas</span>
           </div>
           <div className="flex items-center gap-1">
-            <span className="text-purple-600">⏱️</span>
+            <span className="text-brand-primary">⏱️</span>
             <span>2-3 minutos</span>
           </div>
           <div className="flex items-center gap-1">
-            <span className="text-purple-600">🤖</span>
+            <span className="text-brand-primary">🤖</span>
             <span>Análisis con IA</span>
           </div>
         </div>

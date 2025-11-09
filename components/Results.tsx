@@ -28,96 +28,105 @@ export default function Results({ companyData, answers, totalScore, onRestart }:
     saveAndAnalyze();
   }, []);
 
-const saveAndAnalyze = async () => {
-  setLoading(true);
-  setError('');
-  
-  try {
-    const timestamp = new Date().toISOString();
-
-    // PASO 1: Guardar datos básicos
-    console.log('📊 Guardando datos básicos...');
-    try {
-      await fetch('/api/save-response', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          companyName: companyData.company,
-          email: companyData.email,
-          acceptsMarketing: companyData.acceptCommunications,
-          totalScore: totalScore,
-          level: levelData.level,
-          timestamp: timestamp,
-        }),
-      });
-    } catch (sheetError) {
-      console.warn('⚠️ Error en Sheets:', sheetError);
-    }
-
-    // PASO 2: Generar análisis IA
-    console.log('🤖 Generando análisis...');
-    const detailedAnswers = questions.map((q) => {
-      const answerValue = answers[q.id];
-      const selectedOption = q.options.find(opt => opt.value === answerValue);
-      return {
-        question: q.text,
-        answer: selectedOption?.text || 'No respondida',
-        description: selectedOption?.description || '',
-        score: answerValue
-      };
-    });
-
-    const response = await fetch('/api/analyze', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        company: companyData.company,
-        email: companyData.email,
-        totalScore,
-        maxScore: MAX_SCORE,
-        level: levelData.level,
-        answers: detailedAnswers
-      }),
-    });
-
-    if (!response.ok) throw new Error('Error en análisis');
-
-    const data = await response.json();
-    setAnalysis(data.analysis);
-
-    // PASO 3: Actualizar diagnóstico
-    console.log('📝 Actualizando diagnóstico...');
-    try {
-      await fetch('/api/update-diagnosis', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: companyData.email,
-          diagnosis: data.analysis,
-        }),
-      });
-    } catch (updateError) {
-      console.warn('⚠️ Error actualizando:', updateError);
-    }
+  const saveAndAnalyze = async () => {
+    setLoading(true);
+    setError('');
     
-  } catch (err) {
-    setError('Error al generar análisis');
-    console.error(err);
-  } finally {
-    setLoading(false);
-  }
-};
+    try {
+      const timestamp = new Date().toISOString();
 
-  const getLevelColor = (level: string) => {
-    const colors: Record<string, string> = {
-      'Inicial': 'from-red-500 to-orange-500',
-      'Básico': 'from-orange-500 to-yellow-500',
-      'Intermedio': 'from-yellow-500 to-blue-500',
-      'Avanzado': 'from-blue-500 to-indigo-500',
-      'Experto': 'from-green-500 to-emerald-500',
-    };
-    return colors[level] || 'from-gray-500 to-gray-600';
+      // PASO 1: Guardar datos básicos
+      console.log('📊 Guardando datos básicos...');
+      try {
+        await fetch('/api/save-response', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            companyName: companyData.company,
+            email: companyData.email,
+            acceptsMarketing: companyData.acceptCommunications,
+            totalScore: totalScore,
+            level: levelData.level,
+            timestamp: timestamp,
+          }),
+        });
+      } catch (sheetError) {
+        console.warn('⚠️ Error en Sheets:', sheetError);
+      }
+
+      // PASO 2: Generar análisis IA
+      console.log('🤖 Generando análisis...');
+      const detailedAnswers = questions.map((q) => {
+        const answerValue = answers[q.id];
+        const selectedOption = q.options.find(opt => opt.value === answerValue);
+        return {
+          question: q.text,
+          answer: selectedOption?.text || 'No respondida',
+          description: selectedOption?.description || '',
+          score: answerValue
+        };
+      });
+
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          company: companyData.company,
+          email: companyData.email,
+          totalScore,
+          maxScore: MAX_SCORE,
+          level: levelData.level,
+          answers: detailedAnswers
+        }),
+      });
+
+      if (!response.ok) throw new Error('Error en análisis');
+
+      const data = await response.json();
+      setAnalysis(data.analysis);
+
+      // PASO 3: Actualizar diagnóstico
+      console.log('📝 Actualizando diagnóstico...');
+      try {
+        await fetch('/api/update-diagnosis', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: companyData.email,
+            diagnosis: data.analysis,
+          }),
+        });
+      } catch (updateError) {
+        console.warn('⚠️ Error actualizando:', updateError);
+      }
+      
+    } catch (err) {
+      setError('Error al generar análisis');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  // --- SOLUCIÓN SIMPLE Y DEFINITIVA PARA EL BADGE! ---
+  // Esta función devuelve clases de color SÓLIDAS que Tailwind siempre puede encontrar.
+  const getLevelBadgeClasses = (level: string) => {
+    switch (level) {
+      case 'Inicial':
+        return 'bg-gray-200 text-gray-800'; // Fondo gris, texto oscuro
+      case 'Básico':
+        return 'bg-brand-light-blue text-brand-primary'; // Fondo azul claro, texto azul
+      case 'Intermedio':
+        return 'bg-brand-secondary text-white'; // Fondo azul medio, texto blanco
+      case 'Avanzado':
+        return 'bg-brand-primary text-white'; // Fondo azul oscuro, texto blanco
+      case 'Experto':
+        return 'bg-gray-800 text-white'; // Fondo gris oscuro, texto blanco
+      default:
+        return 'bg-gray-200 text-gray-800';
+    }
+  };
+
 
   return (
     <div className="w-full max-w-4xl mx-auto animate-fade-in">
@@ -128,7 +137,7 @@ const saveAndAnalyze = async () => {
             ¡Análisis Completado!
           </h2>
           <p className="text-gray-600">
-            Aquí están los resultados para <span className="font-semibold text-purple-600">{companyData.company}</span>
+            Aquí están los resultados para <span className="font-semibold text-brand-primary">{companyData.company}</span>
           </p>
         </div>
 
@@ -140,8 +149,8 @@ const saveAndAnalyze = async () => {
               <circle cx="96" cy="96" r="88" stroke="url(#gradient)" strokeWidth="12" fill="transparent" strokeDasharray={`${2 * Math.PI * 88}`} strokeDashoffset={`${2 * Math.PI * 88 * (1 - levelData.percentage / 100)}`} className="transition-all duration-1000 ease-out" strokeLinecap="round" />
               <defs>
                 <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#8B5CF6" />
-                  <stop offset="100%" stopColor="#EC4899" />
+                  <stop offset="0%" stopColor="#065EB3" />
+                  <stop offset="100%" stopColor="#1D9CDC" />
                 </linearGradient>
               </defs>
             </svg>
@@ -150,7 +159,9 @@ const saveAndAnalyze = async () => {
               <span className="text-sm text-gray-500">de {MAX_SCORE}</span>
             </div>
           </div>
-          <div className={`inline-flex items-center gap-2 px-6 py-3 rounded-full text-white font-bold text-xl shadow-lg bg-gradient-to-r ${getLevelColor(levelData.level)}`}>
+          
+          {/* --- ¡AQUÍ SE USA LA NUEVA FUNCIÓN! --- */}
+          <div className={`inline-flex items-center gap-2 px-6 py-3 rounded-full font-bold text-xl shadow-lg ${getLevelBadgeClasses(levelData.level)}`}>
             <span className="text-2xl">{levelData.emoji}</span>
             <span>Nivel {levelData.level}</span>
           </div>
@@ -158,20 +169,20 @@ const saveAndAnalyze = async () => {
 
         {/* Quick stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-purple-50 rounded-lg p-4 text-center">
-            <TrendingUp className="w-6 h-6 text-purple-600 mx-auto mb-2" />
+          <div className="bg-brand-light-blue rounded-lg p-4 text-center">
+            <TrendingUp className="w-6 h-6 text-brand-primary mx-auto mb-2" />
             <p className="text-sm text-gray-600">Percentil</p>
-            <p className="text-2xl font-bold text-purple-600">{Math.round(levelData.percentage)}%</p>
+            <p className="text-2xl font-bold text-brand-primary">{Math.round(levelData.percentage)}%</p>
           </div>
-          <div className="bg-pink-50 rounded-lg p-4 text-center">
-            <Target className="w-6 h-6 text-pink-600 mx-auto mb-2" />
+          <div className="bg-brand-light-blue rounded-lg p-4 text-center">
+            <Target className="w-6 h-6 text-brand-secondary mx-auto mb-2" />
             <p className="text-sm text-gray-600">Preguntas</p>
-            <p className="text-2xl font-bold text-pink-600">{questions.length}/{questions.length}</p>
+            <p className="text-2xl font-bold text-brand-secondary">{questions.length}/{questions.length}</p>
           </div>
-          <div className="bg-indigo-50 rounded-lg p-4 text-center">
-            <Zap className="w-6 h-6 text-indigo-600 mx-auto mb-2" />
+          <div className="bg-brand-light-blue rounded-lg p-4 text-center">
+            <Zap className="w-6 h-6 text-gray-700 mx-auto mb-2" />
             <p className="text-sm text-gray-600">Potencial</p>
-            <p className="text-2xl font-bold text-indigo-600">{MAX_SCORE - totalScore} pts</p>
+            <p className="text-2xl font-bold text-gray-700">{MAX_SCORE - totalScore} pts</p>
           </div>
         </div>
       </div>
@@ -179,20 +190,24 @@ const saveAndAnalyze = async () => {
       {/* AI Analysis */}
       <div className="bg-white rounded-2xl shadow-xl p-8 md:p-10 mb-6">
         <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg">
+          <div className="p-2 bg-gradient-to-r from-brand-primary to-brand-secondary rounded-lg">
             <CheckCircle2 className="w-6 h-6 text-white" />
           </div>
           <h3 className="text-2xl font-bold text-gray-800">
             Análisis Personalizado con IA
           </h3>
         </div>
+        
+        {/* --- CÓDIGO DE CARGA RESTAURADO --- */}
         {loading && (
           <div className="flex flex-col items-center justify-center py-12">
-            <Loader2 className="w-12 h-12 text-purple-600 animate-spin mb-4" />
+            <Loader2 className="w-12 h-12 text-brand-primary animate-spin mb-4" />
             <p className="text-gray-600">Generando tu análisis personalizado...</p>
             <p className="text-sm text-gray-500 mt-2">Esto puede tomar unos segundos</p>
           </div>
         )}
+
+        {/* --- CÓDIGO DE ERROR RESTAURADO --- */}
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
             <p className="text-red-800 mb-4">{error}</p>
@@ -205,6 +220,8 @@ const saveAndAnalyze = async () => {
             </button>
           </div>
         )}
+        
+        {/* --- CÓDIGO DE ANÁLISIS (YA ESTABA BIEN) --- */}
         {!loading && !error && analysis && (
           <div className="prose prose-lg max-w-none">
             <ReactMarkdown
@@ -224,25 +241,28 @@ const saveAndAnalyze = async () => {
         )}
       </div>
 
-      {/* Action buttons */}
-      <div className="flex flex-col sm:flex-row gap-4">
+      {/* --- BOTONES DE ACCIÓN CORREGIDOS --- */}
+      <div className="flex justify-center">
         <button
           onClick={onRestart}
-          className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-white border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-all"
+          className="w-full md:w-4/5 flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-brand-primary to-brand-secondary text-white rounded-lg font-semibold hover:opacity-90 transition-all shadow-lg"
         >
           <RefreshCw className="w-5 h-5" />
           Hacer test nuevamente
         </button>
-        <button
+        
+        {/* El botón de descarga está oculto (comentado) */}
+        {/* <button
           onClick={() => window.print()}
-          className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg"
+          className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-brand-primary to-brand-secondary text-white rounded-lg font-semibold hover:opacity-90 transition-all shadow-lg"
         >
           <Download className="w-5 h-5" />
           Descargar resultados
         </button>
+        */}
       </div>
 
-      {/* Footer message */}
+      {/* --- FOOTER CORREGIDO (SIN ERRORES DE SINTAXIS) --- */}
       <div className="mt-8 text-center">
         <p className="text-gray-600">
           ¿Quieres llevar tu estrategia data-driven al siguiente nivel?
@@ -251,7 +271,7 @@ const saveAndAnalyze = async () => {
           href="https://trackingdatax.com/contacto-consultoria-marketing"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-block mt-3 text-purple-600 hover:text-purple-700 font-semibold underline"
+          className="inline-block mt-3 text-brand-primary hover:text-brand-secondary font-semibold underline"
         >
           Agenda una consulta gratuita →
         </a>

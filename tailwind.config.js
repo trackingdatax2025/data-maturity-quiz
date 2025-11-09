@@ -8,22 +8,11 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: {
-          50: '#f0f4ff',
-          100: '#e0e9ff',
-          200: '#c7d7ff',
-          300: '#a4baff',
-          400: '#8094ff',
-          500: '#6366f1',
-          600: '#4f46e5',
-          700: '#4338ca',
-          800: '#3730a3',
-          900: '#312e81',
-        },
-        trackingdatax: {
-          purple: '#8B5CF6',
-          pink: '#EC4899',
-        }
+        'brand-primary': '#065EB3', // Azul oscuro para textos y elementos importantes
+        'brand-secondary': '#1D9CDC', // Azul medio para botones y acentos
+        'brand-light-blue': '#E0EDF4', // Azul muy claro para fondos sutiles
+        'brand-bg': '#FFFFFF', // Fondo principal blanco
+        'brand-bg-alt': '#F9F6F2', // Fondo alternativo color hueso
       },
     },
   },

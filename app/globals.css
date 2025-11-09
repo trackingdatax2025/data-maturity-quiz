@@ -2,13 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --trackingdatax-purple: #8B5CF6;
-  --trackingdatax-pink: #EC4899;
-}
-
 body {
-  @apply bg-gradient-to-br from-gray-50 to-gray-100;
+  /* Usamos tu color hueso como fondo principal, es más suave que el blanco puro */
+  @apply bg-brand-bg-alt;
 }
 
 /* Custom animations */
@@ -27,15 +23,15 @@ body {
   animation: fadeIn 0.5s ease-out;
 }
 
-/* Gradient text */
+/* Nuevo gradiente con tus colores */
 .gradient-text {
-  background: linear-gradient(135deg, var(--trackingdatax-purple) 0%, var(--trackingdatax-pink) 100%);
+  background: linear-gradient(135deg, #065EB3 0%, #1D9CDC 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* Custom scrollbar */
+/* Nueva barra de scroll */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -45,19 +41,5 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-gradient-to-b from-purple-500 to-pink-500 rounded-full;
-}
-
-/* Loading spinner */
-.spinner {
-  border: 3px solid rgba(139, 92, 246, 0.1);
-  border-top-color: #8B5CF6;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
+  @apply bg-gradient-to-b from-brand-primary to-brand-secondary rounded-full;
 }
