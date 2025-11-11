@@ -24,37 +24,18 @@ export default function Results({ companyData, answers, totalScore, onRestart }:
   const levelData = calculateLevel(totalScore);
 
   useEffect(() => {
-    // Esta función ahora se encarga de guardar y luego analizar.
-    saveAndAnalyze();
+    // Esta función ahora se encarga de analizar y LUEGO guardar.
+    analyzeAndSave();
   }, []);
 
-  const saveAndAnalyze = async () => {
+  const analyzeAndSave = async () => {
     setLoading(true);
     setError('');
     
     try {
       const timestamp = new Date().toISOString();
 
-      // PASO 1: Guardar datos básicos
-      console.log('📊 Guardando datos básicos...');
-      try {
-        await fetch('/api/save-response', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            companyName: companyData.company,
-            email: companyData.email,
-            acceptsMarketing: companyData.acceptCommunications,
-            totalScore: totalScore,
-            level: levelData.level,
-            timestamp: timestamp,
-          }),
-        });
-      } catch (sheetError) {
-        console.warn('⚠️ Error en Sheets:', sheetError);
-      }
-
-      // PASO 2: Generar análisis IA
+      // --- PASO 1 (NUEVO): Generar análisis IA ---
       console.log('🤖 Generando análisis...');
       const detailedAnswers = questions.map((q) => {
         const answerValue = answers[q.id];
@@ -83,22 +64,32 @@ export default function Results({ companyData, answers, totalScore, onRestart }:
       if (!response.ok) throw new Error('Error en análisis');
 
       const data = await response.json();
-      setAnalysis(data.analysis);
+      setAnalysis(data.analysis); // data.analysis ahora contiene el diagnóstico
 
-      // PASO 3: Actualizar diagnóstico
-      console.log('📝 Actualizando diagnóstico...');
+      // --- PASO 2 (NUEVO): Guardar datos COMPLETOS ---
+      // Ahora llamamos a save-response CON el diagnóstico incluido
+      console.log('📊 Guardando datos básicos + diagnóstico...');
       try {
-        await fetch('/api/update-diagnosis', {
+        await fetch('/api/save-response', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            companyName: companyData.company,
             email: companyData.email,
-            diagnosis: data.analysis,
+            acceptsMarketing: companyData.acceptCommunications,
+            totalScore: totalScore,
+            level: levelData.level,
+            timestamp: timestamp,
+            diagnosis: data.analysis  // <--- ¡AQUÍ ESTÁ LA CORRECCIÓN!
           }),
         });
-      } catch (updateError) {
-        console.warn('⚠️ Error actualizando:', updateError);
+      } catch (sheetError) {
+        // El guardado en sheets es secundario, no debe detener la UX
+        console.warn('⚠️ Error en Sheets:', sheetError);
       }
+      
+      // --- PASO 3 (ELIMINADO): Ya no es necesario ---
+      // La API 'update-diagnosis' ya no se usa.
       
     } catch (err) {
       setError('Error al generar análisis');
@@ -212,7 +203,7 @@ export default function Results({ companyData, answers, totalScore, onRestart }:
           <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
             <p className="text-red-800 mb-4">{error}</p>
             <button
-              onClick={saveAndAnalyze}
+              onClick={analyzeAndSave} // Cambiado para re-ejecutar el flujo completo
               className="inline-flex items-center gap-2 px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
             >
               <RefreshCw className="w-4 h-4" />
@@ -263,7 +254,7 @@ export default function Results({ companyData, answers, totalScore, onRestart }:
       </div>
 
       {/* --- FOOTER CORREGIDO (SIN ERRORES DE SINTAXIS) --- */}
-      <div className="mt-8 text-center">
+      {/* <div className="mt-8 text-center">
         <p className="text-gray-600">
           ¿Quieres llevar tu estrategia data-driven al siguiente nivel?
         </p>
@@ -275,7 +266,7 @@ export default function Results({ companyData, answers, totalScore, onRestart }:
         >
           Agenda una consulta gratuita →
         </a>
-      </div>
+      </div> */}
     </div>
   );
 }

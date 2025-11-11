@@ -5,7 +5,8 @@ import { GoogleAuth } from 'google-auth-library';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { companyName, email, acceptsMarketing, totalScore, level, answers, timestamp } = body;
+    // Ahora incluimos 'diagnosis' en la desestructuración
+    const { companyName, email, acceptsMarketing, totalScore, level, timestamp, diagnosis } = body;
 
     // 1) Validar envs
     if (!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || 
@@ -21,6 +22,9 @@ export async function POST(request: NextRequest) {
     console.log('📊 Guardando en Google Sheets...');
     console.log('Empresa:', companyName);
     console.log('Email:', email);
+    // Agregamos un log para verificar que el diagnóstico llega
+    console.log('Diagnóstico presente:', diagnosis ? 'SÍ' : 'NO');
+
 
     // 2) Auth
     const auth = new GoogleAuth({
@@ -45,42 +49,34 @@ export async function POST(request: NextRequest) {
     const nextEmptyRow = (colA.data.values?.length ?? 0) + 1;
     console.log(`✅ Insertando en fila: ${nextEmptyRow}`);
 
-    // 5) Diagnóstico (si llega en el body)
-    const diagnosis = body.diagnosis || '';
-
-    // 6) Valor SI/NO del checkbox
+    // 5) Valor SI/NO del checkbox
     const aceptaContacto = acceptsMarketing ? 'SI' : 'NO';
 
-    // 7) Escribimos PRIMERO la fila base en A:F
-    // Estructura: A Fecha | B Nombre | C Mail | D Url | E Formulario | F Diagnóstico
-    const baseRow = [
+    // 6) Escribimos TODA la fila de una vez (A:G)
+    // Esta es la optimización clave: una sola fila, una sola llamada.
+    const fullRow = [
       timestamp || new Date().toISOString(), // A - Fecha
       companyName || '',                      // B - Nombre
       email || '',                            // C - Mail
       '',                                     // D - Url (vacío)
       'Diagnostico Madurez',                  // E - Formulario
-      diagnosis                               // F - Diagnóstico
+      diagnosis || '',                        // F - Diagnóstico (Ahora sí viene)
+      aceptaContacto                          // G - Acepta ser contactado
     ];
 
-    const rangeBase = `A${nextEmptyRow}:F${nextEmptyRow}`;
+    // El rango ahora va de A hasta G
+    const rangeFull = `A${nextEmptyRow}:G${nextEmptyRow}`;
 
     await sheets.spreadsheets.values.update({
       spreadsheetId,
-      range: rangeBase,
+      range: rangeFull, // Rango completo
       valueInputOption: 'USER_ENTERED',
-      requestBody: { values: [baseRow] },
+      requestBody: { values: [fullRow] }, // Fila completa
     });
 
-    // 8) Luego actualizamos SOLO la columna G (Acepta ser contactado)
-    const rangeAcepta = `G${nextEmptyRow}:G${nextEmptyRow}`;
-    await sheets.spreadsheets.values.update({
-      spreadsheetId,
-      range: rangeAcepta,
-      valueInputOption: 'USER_ENTERED',
-      requestBody: { values: [[aceptaContacto]] },
-    });
-
-    console.log(`✅ Fila ${nextEmptyRow} escrita (A:F) y columna G actualizada con "${aceptaContacto}"`);
+    // 7) La segunda llamada (que actualizaba G) se elimina
+    
+    console.log(`✅ Fila ${nextEmptyRow} completa guardada (A:G con diagnóstico)`);
 
     return NextResponse.json({
       success: true,
