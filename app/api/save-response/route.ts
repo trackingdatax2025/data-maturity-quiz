@@ -74,8 +74,8 @@ export async function POST(request: NextRequest) {
       utm_content || '',                      // L - utm_content
       gclid || '',                            // M - gclid
       fbclid || '',                           // N - fbclid
-      referrer || '',                         // O - referrer
-      landing_url || '',                      // P - landing_url 
+      landing_url || '',                         // O - landing_url
+      referrer || '',                      // P -  referrer
       ''                                      // Q - telefono 
     ];
 
