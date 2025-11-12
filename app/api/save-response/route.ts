@@ -5,8 +5,13 @@ import { GoogleAuth } from 'google-auth-library';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    // Ahora incluimos 'diagnosis' en la desestructuración
-    const { companyName, email, acceptsMarketing, totalScore, level, timestamp, diagnosis } = body;
+    
+    // Desestructuramos todos los campos que envía el frontend
+    const { 
+      companyName, email, acceptsMarketing, totalScore, level, timestamp, diagnosis,
+      utm_source, utm_medium, utm_campaign, utm_term, utm_content,
+      gclid, fbclid, landing_url, referrer
+    } = body;
 
     // 1) Validar envs
     if (!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || 
@@ -22,9 +27,9 @@ export async function POST(request: NextRequest) {
     console.log('📊 Guardando en Google Sheets...');
     console.log('Empresa:', companyName);
     console.log('Email:', email);
-    // Agregamos un log para verificar que el diagnóstico llega
     console.log('Diagnóstico presente:', diagnosis ? 'SÍ' : 'NO');
-
+    console.log('Landing URL:', landing_url);
+    console.log('UTM Source:', utm_source);
 
     // 2) Auth
     const auth = new GoogleAuth({
@@ -52,31 +57,43 @@ export async function POST(request: NextRequest) {
     // 5) Valor SI/NO del checkbox
     const aceptaContacto = acceptsMarketing ? 'SI' : 'NO';
 
-    // 6) Escribimos TODA la fila de una vez (A:G)
-    // Esta es la optimización clave: una sola fila, una sola llamada.
+    // 6) Escribimos TODA la fila de una vez (A:Q)
+    // --- AJUSTADO A TU ESTRUCTURA DE 17 COLUMNAS ---
     const fullRow = [
       timestamp || new Date().toISOString(), // A - Fecha
       companyName || '',                      // B - Nombre
       email || '',                            // C - Mail
-      '',                                     // D - Url (vacío)
+      landing_url || '',                      // D - Url
       'Diagnostico Madurez',                  // E - Formulario
-      diagnosis || '',                        // F - Diagnóstico (Ahora sí viene)
-      aceptaContacto                          // G - Acepta ser contactado
+      diagnosis || '',                        // F - Diagnóstico
+      aceptaContacto,                         // G - Acepta ser contactado
+      utm_source || '',                       // H - utm_source
+      utm_medium || '',                       // I - utm_medium
+      utm_campaign || '',                     // J - utm_campaign
+      utm_term || '',                         // K - utm_term
+      utm_content || '',                      // L - utm_content
+      gclid || '',                            // M - gclid
+      fbclid || '',                           // N - fbclid
+      referrer || '',                         // O - referrer
+      landing_url || '',                      // P - landing_url 
+      ''                                      // Q - telefono 
     ];
 
-    // El rango ahora va de A hasta G
-    const rangeFull = `A${nextEmptyRow}:G${nextEmptyRow}`;
+    // --- MODIFICADO ---
+    // El rango ahora va de A hasta Q
+    const rangeFull = `A${nextEmptyRow}:Q${nextEmptyRow}`;
 
     await sheets.spreadsheets.values.update({
       spreadsheetId,
-      range: rangeFull, // Rango completo
+      range: rangeFull, // Rango completo (A:Q)
       valueInputOption: 'USER_ENTERED',
       requestBody: { values: [fullRow] }, // Fila completa
     });
 
     // 7) La segunda llamada (que actualizaba G) se elimina
     
-    console.log(`✅ Fila ${nextEmptyRow} completa guardada (A:G con diagnóstico)`);
+    // --- MODIFICADO ---
+    console.log(`✅ Fila ${nextEmptyRow} completa guardada (A:Q con diagnóstico, UTMs y telefono)`);
 
     return NextResponse.json({
       success: true,

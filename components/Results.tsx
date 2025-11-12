@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+// ¡NUEVO! Importamos useSearchParams
+import { useSearchParams } from 'next/navigation';
 import { calculateLevel, MAX_SCORE, questions } from '@/lib/questions';
 import { Loader2, Download, RefreshCw, TrendingUp, Target, Zap, CheckCircle2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
@@ -17,6 +19,9 @@ interface ResultsProps {
 }
 
 export default function Results({ companyData, answers, totalScore, onRestart }: ResultsProps) {
+  // ¡NUEVO! Añadimos el hook para leer parámetros de la URL
+  const searchParams = useSearchParams();
+
   const [analysis, setAnalysis] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
@@ -35,7 +40,20 @@ export default function Results({ companyData, answers, totalScore, onRestart }:
     try {
       const timestamp = new Date().toISOString();
 
-      // --- PASO 1 (NUEVO): Generar análisis IA ---
+      // --- ¡NUEVO! PASO 1: Capturar datos UTM de la URL ---
+      const utmData = {
+        utm_source: searchParams.get('utm_source') || '',
+        utm_medium: searchParams.get('utm_medium') || '',
+        utm_campaign: searchParams.get('utm_campaign') || '',
+        utm_term: searchParams.get('utm_term') || '',
+        utm_content: searchParams.get('utm_content') || '',
+        gclid: searchParams.get('gclid') || '',
+        fbclid: searchParams.get('fbclid') || '',
+        landing_url: searchParams.get('landing_url') || '',
+        referrer: searchParams.get('referrer') || ''
+      };
+
+      // --- PASO 2: Generar análisis IA ---
       console.log('🤖 Generando análisis...');
       const detailedAnswers = questions.map((q) => {
         const answerValue = answers[q.id];
@@ -64,11 +82,11 @@ export default function Results({ companyData, answers, totalScore, onRestart }:
       if (!response.ok) throw new Error('Error en análisis');
 
       const data = await response.json();
-      setAnalysis(data.analysis); // data.analysis ahora contiene el diagnóstico
+      const diagnosisText = data.analysis || 'No se pudo generar el análisis';
+      setAnalysis(diagnosisText); // data.analysis ahora contiene el diagnóstico
 
-      // --- PASO 2 (NUEVO): Guardar datos COMPLETOS ---
-      // Ahora llamamos a save-response CON el diagnóstico incluido
-      console.log('📊 Guardando datos básicos + diagnóstico...');
+      // --- PASO 3: Guardar datos COMPLETOS (con UTMs y diagnóstico) ---
+      console.log('📊 Guardando datos básicos + diagnóstico + UTMs...');
       try {
         await fetch('/api/save-response', {
           method: 'POST',
@@ -80,16 +98,14 @@ export default function Results({ companyData, answers, totalScore, onRestart }:
             totalScore: totalScore,
             level: levelData.level,
             timestamp: timestamp,
-            diagnosis: data.analysis  // <--- ¡AQUÍ ESTÁ LA CORRECCIÓN!
+            diagnosis: diagnosisText, // <--- ¡AQUÍ ESTÁ LA CORRECCIÓN!
+            ...utmData                // <--- ¡Y AQUÍ LOS UTMs!
           }),
         });
       } catch (sheetError) {
         // El guardado en sheets es secundario, no debe detener la UX
         console.warn('⚠️ Error en Sheets:', sheetError);
       }
-      
-      // --- PASO 3 (ELIMINADO): Ya no es necesario ---
-      // La API 'update-diagnosis' ya no se usa.
       
     } catch (err) {
       setError('Error al generar análisis');
