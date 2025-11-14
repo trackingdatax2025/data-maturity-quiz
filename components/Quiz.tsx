@@ -4,6 +4,13 @@ import { useState } from 'react';
 import { questions, MAX_SCORE, calculateLevel } from '@/lib/questions';
 import { ChevronRight, ChevronLeft, Check } from 'lucide-react';
 
+// Declaramos dataLayer para TypeScript
+declare global {
+  interface Window {
+    dataLayer: any[];
+  }
+}
+
 interface QuizProps {
   companyData: {
     company: string;
@@ -18,6 +25,11 @@ export default function Quiz({ companyData, onComplete }: QuizProps) {
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
 
+  // --- AÑADIDO ---
+  // "Guardián" para disparar el evento de 2 preguntas solo una vez
+  const [hasCompletedTwoQuestions, setHasCompletedTwoQuestions] = useState(false);
+  // --- FIN DE AÑADIDO ---
+
   const question = questions[currentQuestion];
   const progress = ((currentQuestion + 1) / questions.length) * 100;
   const isLastQuestion = currentQuestion === questions.length - 1;
@@ -30,6 +42,19 @@ export default function Quiz({ companyData, onComplete }: QuizProps) {
 
   const handleNext = () => {
     if (!canProceed) return;
+
+    // --- AÑADIDO ---
+    // Chequea si estamos en la pregunta 2 (índice 1) y si el evento aún no se disparó
+    if (currentQuestion === 1 && !hasCompletedTwoQuestions) {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        'event': 'maturity_form_2_questions',
+        'quiz_question_number': currentQuestion + 1 // (Opcional) enviamos la pregunta
+      });
+      // Marcamos como disparado para que no vuelva a ocurrir
+      setHasCompletedTwoQuestions(true);
+    }
+    // --- FIN DE AÑADIDO ---
     
     if (isLastQuestion) {
       const totalScore = Object.values(answers).reduce((sum, val) => sum + val, 0);
@@ -49,7 +74,7 @@ export default function Quiz({ companyData, onComplete }: QuizProps) {
 
   return (
     <div className="w-full max-w-3xl mx-auto animate-fade-in">
-      {/* Header with progress */}
+      {/* ... (el resto del <div> del header no cambia) ... */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-gray-600">
@@ -67,13 +92,13 @@ export default function Quiz({ companyData, onComplete }: QuizProps) {
         </div>
       </div>
 
-      {/* Question Card */}
+      {/* ... (el resto del <div> de la tarjeta no cambia) ... */}
       <div className="bg-white rounded-2xl shadow-xl p-8 md:p-10">
         <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-8">
           {question.text}
         </h2>
 
-        {/* Options */}
+        {/* ... (las opciones no cambian) ... */}
         <div className="space-y-3">
           {question.options.map((option, index) => {
             const isSelected = selectedOption === option.value;
@@ -126,7 +151,7 @@ export default function Quiz({ companyData, onComplete }: QuizProps) {
           })}
         </div>
 
-        {/* Navigation buttons */}
+        {/* ... (los botones de navegación no cambian) ... */}
         <div className="flex gap-3 mt-8">
           <button
             onClick={handleBack}
@@ -156,7 +181,7 @@ export default function Quiz({ companyData, onComplete }: QuizProps) {
         </div>
       </div>
 
-      {/* Company info reminder */}
+      {/* ... (el recordatorio de la compañía no cambia) ... */}
       <div className="mt-6 text-center text-sm text-gray-500">
         <p>Analizando para: <span className="font-semibold text-gray-700">{companyData.company}</span></p>
       </div>
