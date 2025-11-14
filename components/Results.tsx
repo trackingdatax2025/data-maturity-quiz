@@ -7,6 +7,13 @@ import { calculateLevel, MAX_SCORE, questions } from '@/lib/questions';
 import { Loader2, Download, RefreshCw, TrendingUp, Target, Zap, CheckCircle2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
+// Declaramos dataLayer para TypeScript
+declare global {
+  interface Window {
+    dataLayer: any[];
+  }
+}
+
 interface ResultsProps {
   companyData: {
     company: string;
@@ -85,6 +92,16 @@ export default function Results({ companyData, answers, totalScore, onRestart }:
       const diagnosisText = data.analysis || 'No se pudo generar el análisis';
       setAnalysis(diagnosisText); // data.analysis ahora contiene el diagnóstico
 
+      // --- AÑADIDO ---
+      // ¡Éxito! El análisis de IA se recibió. Este es el LEAD.
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        'event': 'maturity_form_lead',
+        'maturity_level': levelData.level, // (Opcional) enviamos el nivel
+        'maturity_score': totalScore      // (Opcional) enviamos el puntaje
+      });
+      // --- FIN DE AÑADIDO ---
+
       // --- PASO 3: Guardar datos COMPLETOS (con UTMs y diagnóstico) ---
       console.log('📊 Guardando datos básicos + diagnóstico + UTMs...');
       try {
@@ -137,6 +154,8 @@ export default function Results({ companyData, answers, totalScore, onRestart }:
 
   return (
     <div className="w-full max-w-4xl mx-auto animate-fade-in">
+      {/* ... (el resto del JSX no cambia) ... */}
+      
       {/* Score Card */}
       <div className="bg-white rounded-2xl shadow-xl p-8 md:p-10 mb-6">
         <div className="text-center mb-8">
@@ -257,32 +276,7 @@ export default function Results({ companyData, answers, totalScore, onRestart }:
           <RefreshCw className="w-5 h-5" />
           Hacer test nuevamente
         </button>
-        
-        {/* El botón de descarga está oculto (comentado) */}
-        {/* <button
-          onClick={() => window.print()}
-          className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-brand-primary to-brand-secondary text-white rounded-lg font-semibold hover:opacity-90 transition-all shadow-lg"
-        >
-          <Download className="w-5 h-5" />
-          Descargar resultados
-        </button>
-        */}
       </div>
-
-      {/* --- FOOTER CORREGIDO (SIN ERRORES DE SINTAXIS) --- */}
-      {/* <div className="mt-8 text-center">
-        <p className="text-gray-600">
-          ¿Quieres llevar tu estrategia data-driven al siguiente nivel?
-        </p>
-        <a
-          href="https://trackingdatax.com/contacto-consultoria-marketing"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-block mt-3 text-brand-primary hover:text-brand-secondary font-semibold underline"
-        >
-          Agenda una consulta gratuita →
-        </a>
-      </div> */}
     </div>
   );
 }
