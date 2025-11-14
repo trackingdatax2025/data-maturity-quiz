@@ -3,6 +3,13 @@
 import { useState } from 'react';
 import { Building2, Mail, ArrowRight } from 'lucide-react';
 
+// Declaramos dataLayer para TypeScript
+declare global {
+  interface Window {
+    dataLayer: any[];
+  }
+}
+
 interface StartFormProps {
   onStart: (data: { company: string; email: string; acceptCommunications: boolean }) => void;
 }
@@ -12,10 +19,32 @@ export default function StartForm({ onStart }: StartFormProps) {
   const [email, setEmail] = useState('');
   const [acceptCommunications, setAcceptCommunications] = useState(false);
   const [errors, setErrors] = useState<{ company?: string; email?: string }>({});
+  
+  // --- MODIFICADO ---
+  // Estado para controlar que el evento se dispare solo una vez (para CUALQUIER campo)
+  const [hasStartedForm, setHasStartedForm] = useState(false);
+  // --- FIN DE MODIFICADO ---
 
   const validateEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
+
+  // --- AÑADIDO ---
+  // Función única para disparar el evento de progreso
+  const handleFormProgress = () => {
+    // Revisa al "guardián": "¿Ya hemos disparado este evento antes?"
+    if (!hasStartedForm) {
+      // Asegura que dataLayer exista
+      window.dataLayer = window.dataLayer || [];
+      // Empuja el evento
+      window.dataLayer.push({
+        'event': 'maturity_form_progress'
+      });
+      // Marca como disparado para que no se repita
+      setHasStartedForm(true);
+    }
+  };
+  // --- FIN DE AÑADIDO ---
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,6 +97,9 @@ export default function StartForm({ onStart }: StartFormProps) {
               onChange={(e) => {
                 setCompany(e.target.value);
                 setErrors(prev => ({ ...prev, company: undefined }));
+                // --- MODIFICADO ---
+                handleFormProgress(); // Llama a la función de progreso
+                // --- FIN DE MODIFICADO ---
               }}
               className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-brand-secondary focus:border-transparent transition-all ${
                 errors.company ? 'border-red-500' : 'border-gray-300'
@@ -92,6 +124,9 @@ export default function StartForm({ onStart }: StartFormProps) {
               onChange={(e) => {
                 setEmail(e.target.value);
                 setErrors(prev => ({ ...prev, email: undefined }));
+                // --- MODIFICADO ---
+                handleFormProgress(); // Llama a la función de progreso
+                // --- FIN DE MODIFICADO ---
               }}
               className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-brand-secondary focus:border-transparent transition-all ${
                 errors.email ? 'border-red-500' : 'border-gray-300'
@@ -102,6 +137,8 @@ export default function StartForm({ onStart }: StartFormProps) {
               <p className="mt-1 text-sm text-red-600">{errors.email}</p>
             )}
           </div>
+
+          {/* ... (el resto del formulario no cambia) ... */}
 
           {/* Communications Checkbox */}
           <div className="bg-brand-light-blue border border-blue-200 rounded-lg p-4">
@@ -129,6 +166,7 @@ export default function StartForm({ onStart }: StartFormProps) {
         </form>
 
         <div className="mt-6 flex items-center justify-center gap-6 text-sm text-gray-500">
+          {/* ... (íconos no cambian) ... */}
           <div className="flex items-center gap-1">
             <span className="text-brand-primary">⚡</span>
             <span>5 preguntas</span>
