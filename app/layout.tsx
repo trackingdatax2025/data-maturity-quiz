@@ -19,20 +19,30 @@ export default function RootLayout({
   return (
     <html lang="es">
       <head>
-      {/* Google Tag Manager */}
-          <Script id="gtm-script" strategy="afterInteractive">
-          {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-          new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-          })(window,document,'script','dataLayer','GTM-W278X64Z');`}
-          </Script>
+        {/* ✅ Stape Custom Loader (Head)
+           Este script carga GTM desde tu servidor Stape usando el código ofuscado que te dieron.
+        */}
+        <Script id="gtm-script" strategy="afterInteractive">
+          {`
+            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s);j.async=true;
+            
+            // Carga desde tu servidor Stape con el identificador especial
+            j.src="https://nqagmrgk.sav.stape.io/3mthnqagmrgk.js?"+i;
+            
+            f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','bb6h=AgNPKjMsXDlZUEo1UVUrSB1aQENWRwIBG1pdHgIY');
+          `}
+        </Script>
       </head>
       <body className={inter.className}>
-        {/* Google Tag Manager (noscript) */}
+        {/* ✅ Stape Custom Loader (Body - NoScript)
+           Pixel invisible cargado desde Stape para usuarios sin JavaScript.
+        */}
         <noscript>
           <iframe 
-            src="https://www.googletagmanager.com/ns.html?id=GTM-W278X64Z"
+            src="https://nqagmrgk.sav.stape.io/ns.html?id=GTM-W278X64Z"
             height="0" 
             width="0" 
             style={{ display: 'none', visibility: 'hidden' }}
