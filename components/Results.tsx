@@ -1,11 +1,18 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-// ¡NUEVO! Importamos useSearchParams
 import { useSearchParams } from 'next/navigation';
 import { calculateLevel, MAX_SCORE, questions } from '@/lib/questions';
-import { Loader2, Download, RefreshCw, TrendingUp, Target, Zap, CheckCircle2 } from 'lucide-react';
+import {
+  Loader2,
+  RefreshCw,
+  TrendingUp,
+  Target,
+  Zap,
+  CheckCircle2,
+} from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import { useIframeResize } from '@/lib/useIframeResize';
 
 // Declaramos dataLayer para TypeScript
 declare global {
@@ -25,8 +32,12 @@ interface ResultsProps {
   onRestart: () => void;
 }
 
-export default function Results({ companyData, answers, totalScore, onRestart }: ResultsProps) {
-  // ¡NUEVO! Añadimos el hook para leer parámetros de la URL
+export default function Results({
+  companyData,
+  answers,
+  totalScore,
+  onRestart,
+}: ResultsProps) {
   const searchParams = useSearchParams();
 
   const [analysis, setAnalysis] = useState<string>('');
@@ -35,19 +46,23 @@ export default function Results({ companyData, answers, totalScore, onRestart }:
 
   const levelData = calculateLevel(totalScore);
 
+  // 🔥 AUTO-RESIZE DEL IFRAME
+  // Se recalcula cuando cambia loader / análisis / error
+  useIframeResize([loading, analysis, error]);
+
   useEffect(() => {
-    // Esta función ahora se encarga de analizar y LUEGO guardar.
     analyzeAndSave();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const analyzeAndSave = async () => {
     setLoading(true);
     setError('');
-    
+
     try {
       const timestamp = new Date().toISOString();
 
-      // --- ¡NUEVO! PASO 1: Capturar datos UTM de la URL ---
+      // --- Captura de UTMs ---
       const utmData = {
         utm_source: searchParams.get('utm_source') || '',
         utm_medium: searchParams.get('utm_medium') || '',
@@ -57,22 +72,24 @@ export default function Results({ companyData, answers, totalScore, onRestart }:
         gclid: searchParams.get('gclid') || '',
         fbclid: searchParams.get('fbclid') || '',
         landing_url: searchParams.get('landing_url') || '',
-        referrer: searchParams.get('referrer') || ''
+        referrer: searchParams.get('referrer') || '',
       };
 
-      // --- PASO 2: Generar análisis IA ---
-      console.log('🤖 Generando análisis...');
+      // --- Construcción de respuestas detalladas ---
       const detailedAnswers = questions.map((q) => {
         const answerValue = answers[q.id];
-        const selectedOption = q.options.find(opt => opt.value === answerValue);
+        const selectedOption = q.options.find(
+          (opt) => opt.value === answerValue
+        );
         return {
           question: q.text,
           answer: selectedOption?.text || 'No respondida',
           description: selectedOption?.description || '',
-          score: answerValue
+          score: answerValue,
         };
       });
 
+      // --- Análisis IA ---
       const response = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -82,28 +99,27 @@ export default function Results({ companyData, answers, totalScore, onRestart }:
           totalScore,
           maxScore: MAX_SCORE,
           level: levelData.level,
-          answers: detailedAnswers
+          answers: detailedAnswers,
         }),
       });
 
       if (!response.ok) throw new Error('Error en análisis');
 
       const data = await response.json();
-      const diagnosisText = data.analysis || 'No se pudo generar el análisis';
-      setAnalysis(diagnosisText); // data.analysis ahora contiene el diagnóstico
+      const diagnosisText =
+        data.analysis || 'No se pudo generar el análisis';
 
-      // --- AÑADIDO ---
-      // ¡Éxito! El análisis de IA se recibió. Este es el LEAD.
+      setAnalysis(diagnosisText);
+
+      // --- Evento LEAD ---
       window.dataLayer = window.dataLayer || [];
       window.dataLayer.push({
-        'event': 'maturity_form_lead',
-        'maturity_level': levelData.level, // (Opcional) enviamos el nivel
-        'maturity_score': totalScore      // (Opcional) enviamos el puntaje
+        event: 'maturity_form_lead',
+        maturity_level: levelData.level,
+        maturity_score: totalScore,
       });
-      // --- FIN DE AÑADIDO ---
 
-      // --- PASO 3: Guardar datos COMPLETOS (con UTMs y diagnóstico) ---
-      console.log('📊 Guardando datos básicos + diagnóstico + UTMs...');
+      // --- Guardado (no bloqueante) ---
       try {
         await fetch('/api/save-response', {
           method: 'POST',
@@ -112,50 +128,44 @@ export default function Results({ companyData, answers, totalScore, onRestart }:
             companyName: companyData.company,
             email: companyData.email,
             acceptsMarketing: companyData.acceptCommunications,
-            totalScore: totalScore,
+            totalScore,
             level: levelData.level,
-            timestamp: timestamp,
-            diagnosis: diagnosisText, // <--- ¡AQUÍ ESTÁ LA CORRECCIÓN!
-            ...utmData                // <--- ¡Y AQUÍ LOS UTMs!
+            timestamp,
+            diagnosis: diagnosisText,
+            ...utmData,
           }),
         });
       } catch (sheetError) {
-        // El guardado en sheets es secundario, no debe detener la UX
-        console.warn('⚠️ Error en Sheets:', sheetError);
+        console.warn('⚠️ Error guardando datos:', sheetError);
       }
-      
     } catch (err) {
-      setError('Error al generar análisis');
       console.error(err);
+      setError('Error al generar análisis');
     } finally {
       setLoading(false);
     }
   };
 
-  // --- SOLUCIÓN SIMPLE Y DEFINITIVA PARA EL BADGE! ---
-  // Esta función devuelve clases de color SÓLIDAS que Tailwind siempre puede encontrar.
+  // --- Clases sólidas para el badge ---
   const getLevelBadgeClasses = (level: string) => {
     switch (level) {
       case 'Inicial':
-        return 'bg-gray-200 text-gray-800'; // Fondo gris, texto oscuro
+        return 'bg-gray-200 text-gray-800';
       case 'Básico':
-        return 'bg-brand-light-blue text-brand-primary'; // Fondo azul claro, texto azul
+        return 'bg-brand-light-blue text-brand-primary';
       case 'Intermedio':
-        return 'bg-brand-secondary text-white'; // Fondo azul medio, texto blanco
+        return 'bg-brand-secondary text-white';
       case 'Avanzado':
-        return 'bg-brand-primary text-white'; // Fondo azul oscuro, texto blanco
+        return 'bg-brand-primary text-white';
       case 'Experto':
-        return 'bg-gray-800 text-white'; // Fondo gris oscuro, texto blanco
+        return 'bg-gray-800 text-white';
       default:
         return 'bg-gray-200 text-gray-800';
     }
   };
 
-
   return (
     <div className="w-full max-w-4xl mx-auto animate-fade-in">
-      {/* ... (el resto del JSX no cambia) ... */}
-      
       {/* Score Card */}
       <div className="bg-white rounded-2xl shadow-xl p-8 md:p-10 mb-6">
         <div className="text-center mb-8">
@@ -163,16 +173,40 @@ export default function Results({ companyData, answers, totalScore, onRestart }:
             ¡Análisis Completado!
           </h2>
           <p className="text-gray-600">
-            Aquí están los resultados para <span className="font-semibold text-brand-primary">{companyData.company}</span>
+            Resultados para{' '}
+            <span className="font-semibold text-brand-primary">
+              {companyData.company}
+            </span>
           </p>
         </div>
 
-        {/* Score visualization */}
+        {/* Score */}
         <div className="flex flex-col items-center mb-8">
           <div className="relative w-48 h-48 mb-6">
             <svg className="transform -rotate-90 w-48 h-48">
-              <circle cx="96" cy="96" r="88" stroke="currentColor" strokeWidth="12" fill="transparent" className="text-gray-200" />
-              <circle cx="96" cy="96" r="88" stroke="url(#gradient)" strokeWidth="12" fill="transparent" strokeDasharray={`${2 * Math.PI * 88}`} strokeDashoffset={`${2 * Math.PI * 88 * (1 - levelData.percentage / 100)}`} className="transition-all duration-1000 ease-out" strokeLinecap="round" />
+              <circle
+                cx="96"
+                cy="96"
+                r="88"
+                stroke="currentColor"
+                strokeWidth="12"
+                fill="transparent"
+                className="text-gray-200"
+              />
+              <circle
+                cx="96"
+                cy="96"
+                r="88"
+                stroke="url(#gradient)"
+                strokeWidth="12"
+                fill="transparent"
+                strokeDasharray={`${2 * Math.PI * 88}`}
+                strokeDashoffset={`${
+                  2 * Math.PI * 88 * (1 - levelData.percentage / 100)
+                }`}
+                className="transition-all duration-1000 ease-out"
+                strokeLinecap="round"
+              />
               <defs>
                 <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stopColor="#065EB3" />
@@ -181,34 +215,47 @@ export default function Results({ companyData, answers, totalScore, onRestart }:
               </defs>
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-5xl font-bold gradient-text">{totalScore}</span>
-              <span className="text-sm text-gray-500">de {MAX_SCORE}</span>
+              <span className="text-5xl font-bold gradient-text">
+                {totalScore}
+              </span>
+              <span className="text-sm text-gray-500">
+                de {MAX_SCORE}
+              </span>
             </div>
           </div>
-          
-          {/* --- ¡AQUÍ SE USA LA NUEVA FUNCIÓN! --- */}
-          <div className={`inline-flex items-center gap-2 px-6 py-3 rounded-full font-bold text-xl shadow-lg ${getLevelBadgeClasses(levelData.level)}`}>
+
+          <div
+            className={`inline-flex items-center gap-2 px-6 py-3 rounded-full font-bold text-xl shadow-lg ${getLevelBadgeClasses(
+              levelData.level
+            )}`}
+          >
             <span className="text-2xl">{levelData.emoji}</span>
             <span>Nivel {levelData.level}</span>
           </div>
         </div>
 
         {/* Quick stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-brand-light-blue rounded-lg p-4 text-center">
             <TrendingUp className="w-6 h-6 text-brand-primary mx-auto mb-2" />
             <p className="text-sm text-gray-600">Percentil</p>
-            <p className="text-2xl font-bold text-brand-primary">{Math.round(levelData.percentage)}%</p>
+            <p className="text-2xl font-bold text-brand-primary">
+              {Math.round(levelData.percentage)}%
+            </p>
           </div>
           <div className="bg-brand-light-blue rounded-lg p-4 text-center">
             <Target className="w-6 h-6 text-brand-secondary mx-auto mb-2" />
             <p className="text-sm text-gray-600">Preguntas</p>
-            <p className="text-2xl font-bold text-brand-secondary">{questions.length}/{questions.length}</p>
+            <p className="text-2xl font-bold text-brand-secondary">
+              {questions.length}/{questions.length}
+            </p>
           </div>
           <div className="bg-brand-light-blue rounded-lg p-4 text-center">
             <Zap className="w-6 h-6 text-gray-700 mx-auto mb-2" />
             <p className="text-sm text-gray-600">Potencial</p>
-            <p className="text-2xl font-bold text-gray-700">{MAX_SCORE - totalScore} pts</p>
+            <p className="text-2xl font-bold text-gray-700">
+              {MAX_SCORE - totalScore} pts
+            </p>
           </div>
         </div>
       </div>
@@ -223,22 +270,24 @@ export default function Results({ companyData, answers, totalScore, onRestart }:
             Análisis Personalizado con IA
           </h3>
         </div>
-        
-        {/* --- CÓDIGO DE CARGA RESTAURADO --- */}
+
         {loading && (
           <div className="flex flex-col items-center justify-center py-12">
             <Loader2 className="w-12 h-12 text-brand-primary animate-spin mb-4" />
-            <p className="text-gray-600">Generando tu análisis personalizado...</p>
-            <p className="text-sm text-gray-500 mt-2">Esto puede tomar unos segundos</p>
+            <p className="text-gray-600">
+              Generando tu análisis personalizado…
+            </p>
+            <p className="text-sm text-gray-500 mt-2">
+              Esto puede tomar unos segundos
+            </p>
           </div>
         )}
 
-        {/* --- CÓDIGO DE ERROR RESTAURADO --- */}
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
             <p className="text-red-800 mb-4">{error}</p>
             <button
-              onClick={analyzeAndSave} // Cambiado para re-ejecutar el flujo completo
+              onClick={analyzeAndSave}
               className="inline-flex items-center gap-2 px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
             >
               <RefreshCw className="w-4 h-4" />
@@ -246,28 +295,15 @@ export default function Results({ companyData, answers, totalScore, onRestart }:
             </button>
           </div>
         )}
-        
-        {/* --- CÓDIGO DE ANÁLISIS (YA ESTABA BIEN) --- */}
+
         {!loading && !error && analysis && (
           <div className="prose prose-lg max-w-none">
-            <ReactMarkdown
-              components={{
-                h1: ({ node, ...props }) => <h1 className="text-2xl font-bold text-gray-800 mt-6 mb-4" {...props} />,
-                h2: ({ node, ...props }) => <h2 className="text-xl font-bold text-gray-800 mt-6 mb-3" {...props} />,
-                h3: ({ node, ...props }) => <h3 className="text-lg font-semibold text-gray-700 mt-4 mb-2" {...props} />,
-                p: ({ node, ...props }) => <p className="text-gray-700 mb-4 leading-relaxed" {...props} />,
-                ul: ({ node, ...props }) => <ul className="list-disc list-inside space-y-2 mb-4 text-gray-700" {...props} />,
-                ol: ({ node, ...props }) => <ol className="list-decimal list-inside space-y-2 mb-4 text-gray-700" {...props} />,
-                strong: ({ node, ...props }) => <strong className="font-semibold text-gray-900" {...props} />,
-              }}
-            >
-              {analysis}
-            </ReactMarkdown>
+            <ReactMarkdown>{analysis}</ReactMarkdown>
           </div>
         )}
       </div>
 
-      {/* --- BOTONES DE ACCIÓN CORREGIDOS --- */}
+      {/* Action */}
       <div className="flex justify-center">
         <button
           onClick={onRestart}
