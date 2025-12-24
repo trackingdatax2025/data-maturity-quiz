@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { questions, MAX_SCORE, calculateLevel } from '@/lib/questions';
+import { questions } from '@/lib/questions';
 import { ChevronRight, ChevronLeft, Check } from 'lucide-react';
+import { useIframeResize } from '@/lib/useIframeResize';
 
 // Declaramos dataLayer para TypeScript
 declare global {
@@ -25,15 +26,17 @@ export default function Quiz({ companyData, onComplete }: QuizProps) {
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
 
-  // --- AÑADIDO ---
-  // "Guardián" para disparar el evento de 2 preguntas solo una vez
+  // 🔒 Guardián para disparar el evento de 2 preguntas solo una vez
   const [hasCompletedTwoQuestions, setHasCompletedTwoQuestions] = useState(false);
-  // --- FIN DE AÑADIDO ---
 
   const question = questions[currentQuestion];
   const progress = ((currentQuestion + 1) / questions.length) * 100;
   const isLastQuestion = currentQuestion === questions.length - 1;
   const canProceed = selectedOption !== null;
+
+  // 🔥 AUTO-RESIZE DEL IFRAME
+  // Se recalcula cuando cambia la pregunta o la selección
+  useIframeResize([currentQuestion, selectedOption]);
 
   const handleOptionSelect = (value: number) => {
     setSelectedOption(value);
@@ -43,19 +46,16 @@ export default function Quiz({ companyData, onComplete }: QuizProps) {
   const handleNext = () => {
     if (!canProceed) return;
 
-    // --- AÑADIDO ---
-    // Chequea si estamos en la pregunta 2 (índice 1) y si el evento aún no se disparó
+    // Evento al completar 2 preguntas
     if (currentQuestion === 1 && !hasCompletedTwoQuestions) {
       window.dataLayer = window.dataLayer || [];
       window.dataLayer.push({
-        'event': 'maturity_form_2_questions',
-        'quiz_question_number': currentQuestion + 1 // (Opcional) enviamos la pregunta
+        event: 'maturity_form_2_questions',
+        quiz_question_number: currentQuestion + 1,
       });
-      // Marcamos como disparado para que no vuelva a ocurrir
       setHasCompletedTwoQuestions(true);
     }
-    // --- FIN DE AÑADIDO ---
-    
+
     if (isLastQuestion) {
       const totalScore = Object.values(answers).reduce((sum, val) => sum + val, 0);
       onComplete(answers, totalScore);
@@ -74,7 +74,7 @@ export default function Quiz({ companyData, onComplete }: QuizProps) {
 
   return (
     <div className="w-full max-w-3xl mx-auto animate-fade-in">
-      {/* ... (el resto del <div> del header no cambia) ... */}
+      {/* Progress */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-gray-600">
@@ -85,24 +85,24 @@ export default function Quiz({ companyData, onComplete }: QuizProps) {
           </span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-          <div 
+          <div
             className="h-full bg-gradient-to-r from-brand-primary to-brand-secondary transition-all duration-500 ease-out"
             style={{ width: `${progress}%` }}
           />
         </div>
       </div>
 
-      {/* ... (el resto del <div> de la tarjeta no cambia) ... */}
+      {/* Card */}
       <div className="bg-white rounded-2xl shadow-xl p-8 md:p-10">
         <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-8">
           {question.text}
         </h2>
 
-        {/* ... (las opciones no cambian) ... */}
+        {/* Options */}
         <div className="space-y-3">
           {question.options.map((option, index) => {
             const isSelected = selectedOption === option.value;
-            
+
             return (
               <button
                 key={index}
@@ -114,20 +114,24 @@ export default function Quiz({ companyData, onComplete }: QuizProps) {
                 }`}
               >
                 <div className="flex items-start gap-4">
-                  {/* Radio circle */}
-                  <div className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                    isSelected
-                      ? 'border-brand-secondary bg-brand-secondary'
-                      : 'border-gray-300'
-                  }`}>
+                  {/* Radio */}
+                  <div
+                    className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                      isSelected
+                        ? 'border-brand-secondary bg-brand-secondary'
+                        : 'border-gray-300'
+                    }`}
+                  >
                     {isSelected && <Check className="w-4 h-4 text-white" />}
                   </div>
-                  
-                  {/* Text content */}
+
+                  {/* Text */}
                   <div className="flex-1">
-                    <p className={`font-semibold mb-1 ${
-                      isSelected ? 'text-brand-primary' : 'text-gray-800'
-                    }`}>
+                    <p
+                      className={`font-semibold mb-1 ${
+                        isSelected ? 'text-brand-primary' : 'text-gray-800'
+                      }`}
+                    >
                       {option.text}
                     </p>
                     {option.description && (
@@ -136,13 +140,15 @@ export default function Quiz({ companyData, onComplete }: QuizProps) {
                       </p>
                     )}
                   </div>
-                  
-                  {/* Score badge */}
-                  <div className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium ${
-                    isSelected
-                      ? 'bg-brand-secondary text-white'
-                      : 'bg-gray-100 text-gray-600'
-                  }`}>
+
+                  {/* Score */}
+                  <div
+                    className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium ${
+                      isSelected
+                        ? 'bg-brand-secondary text-white'
+                        : 'bg-gray-100 text-gray-600'
+                    }`}
+                  >
                     {option.value} pts
                   </div>
                 </div>
@@ -151,7 +157,7 @@ export default function Quiz({ companyData, onComplete }: QuizProps) {
           })}
         </div>
 
-        {/* ... (los botones de navegación no cambian) ... */}
+        {/* Navigation */}
         <div className="flex gap-3 mt-8">
           <button
             onClick={handleBack}
@@ -165,7 +171,7 @@ export default function Quiz({ companyData, onComplete }: QuizProps) {
             <ChevronLeft className="w-5 h-5" />
             Anterior
           </button>
-          
+
           <button
             onClick={handleNext}
             disabled={!canProceed}
@@ -181,9 +187,14 @@ export default function Quiz({ companyData, onComplete }: QuizProps) {
         </div>
       </div>
 
-      {/* ... (el recordatorio de la compañía no cambia) ... */}
+      {/* Company reminder */}
       <div className="mt-6 text-center text-sm text-gray-500">
-        <p>Analizando para: <span className="font-semibold text-gray-700">{companyData.company}</span></p>
+        <p>
+          Analizando para:{' '}
+          <span className="font-semibold text-gray-700">
+            {companyData.company}
+          </span>
+        </p>
       </div>
     </div>
   );
