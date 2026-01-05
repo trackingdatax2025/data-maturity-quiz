@@ -111,13 +111,17 @@ export default function Results({
 
       setAnalysis(diagnosisText);
 
-      // --- Evento LEAD ---
-      window.dataLayer = window.dataLayer || [];
-      window.dataLayer.push({
-        event: 'maturity_form_lead',
-        maturity_level: levelData.level,
-        maturity_score: totalScore,
-      });
+      // --- Evento LEAD (enviado al sitio padre vía postMessage) ---
+      window.parent.postMessage(
+        {
+          event: 'maturity_form_lead',
+          maturity_level: levelData.level,
+          maturity_score: totalScore,
+        },
+        '*'
+      );
+
+
 
       // --- Guardado (no bloqueante) ---
       try {
