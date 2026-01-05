@@ -1,4 +1,4 @@
-'use client';
+  'use client';
 
 import { useState } from 'react';
 import { questions } from '@/lib/questions';
@@ -46,15 +46,18 @@ export default function Quiz({ companyData, onComplete }: QuizProps) {
   const handleNext = () => {
     if (!canProceed) return;
 
-    // Evento al completar 2 preguntas
+    // Evento al completar 2 preguntas (enviado al sitio padre)
     if (currentQuestion === 1 && !hasCompletedTwoQuestions) {
-      window.dataLayer = window.dataLayer || [];
-      window.dataLayer.push({
-        event: 'maturity_form_2_questions',
-        quiz_question_number: currentQuestion + 1,
-      });
+      window.parent.postMessage(
+        {
+          event: 'maturity_form_2_questions',
+          quiz_question_number: currentQuestion + 1,
+        },
+        '*'
+      );
       setHasCompletedTwoQuestions(true);
     }
+
 
     if (isLastQuestion) {
       const totalScore = Object.values(answers).reduce((sum, val) => sum + val, 0);
